@@ -8,7 +8,7 @@
  */
 
 
-class Board {
+class Graph {
 	
 	
 	
@@ -47,6 +47,7 @@ class Node {
 		this.r = r;
 		this.neighbors = [];
 		this.dotCount = 0;
+		//find way to keep track of player that owns node
 		
 	}
 	
