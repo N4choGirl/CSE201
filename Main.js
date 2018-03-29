@@ -7,24 +7,37 @@
  * Group 16
  */
 
-
-class Graph {
+/**
+ * A graph is essentially a collection of nodes.
+ * Which nodes are neighbors to each other relies on the Node class
+ */
+function Graph(){
+	this.nodes = [];
+	this.players = [];
 	
 	
-	
-	
-}
-
-
-class User {
-	
-	constructor(name, color) {
+	/**
+	 * Draws the graph to the given context
+	 */
+	this.draw = function(context){
+		//draw edges first
 		
-		this.name = name;
-		this.color = color;
+		for(i=0; i<this.nodes.length; i++){
+			var tempNode = this.nodes[i];
+			for(j=0; j<tempNode.neighbors.length; j++){
+				var neighbor = tempNode.neighbors[j];
+				context.beginPath();
+				context.moveTo(tempNode.x, tempNode.y);
+				context.lineTo(neighbor.x, neighbor.y);
+				context.stroke();
+			}
+		}
 		
+		//draw nodes on top
+		for(i=0; i<this.nodes.length; i++){
+			this.nodes[i].draw(context);
+		}
 	}
-	
 	
 }
 
@@ -35,23 +48,36 @@ class User {
  * keep track of how many dots are currently in the Node as well as which 
  * User is occupying the Node.
  */
+function Node(x,y,radius){
+	this.x = x;
+	this.y = y;
+	this.radius = radius;
+	this.dotCount  = 0;
+	this.neighbors = [];
 
-class Node {
+	/**
+	 * draws the node to the given context element of a canvas
+	 */
+	this.draw = function(context){
+		context.fillStyle = "#FF0000";
+		//context.fillStyle = this.player.color;
+		context.beginPath();
+		context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
+		context.fill();
+		context.fillStyle = "#000000";
+		context.font = "10px Arial";
+		context.fillText("" + this.dotCount, this.x, this.y);
+	};
 	
-	//Used to create a new circular node with 
-	//center coordinates (x,y) and radius r
-	constructor(x, y, r) {
-		
-		this.x = x;
-		this.y = y;
-		this.r = r;
-		this.neighbors = [];
-		this.dotCount = 0;
-		//find way to keep track of player that owns node
-		
+	this.contains = function(x, y){
+		var dx = this.x - x;
+		var dy = this.y - y;
+		if(Math.sqrt(dx*dx + dy*dy) < this.radius)
+			return true;
+		return false;
 	}
 	
-	addNeighbor(node) {
+	this.addNeighbor = function(node) {
 		
 		if(!this.hasNeighbor(node)) {
 			this.neighbors.push(node);
@@ -61,9 +87,9 @@ class Node {
 			node.neighbors.push(node);
 		}
 		
-	}
+	};
 	
-	removeNeighbor(node) {
+	this.removeNeighbor = function(node) {
 		
 		if(this.hasNeighbor(node)) {
 			this.neighbors.splice(this.neighbors.indexOf(node),1);
@@ -73,9 +99,9 @@ class Node {
 			node.neighbors.splice(node.neighbors.indexOf(this),1);
 		}
 		
-	}
+	};
 	
-	hasNeighbor(node) {
+	this.hasNeighbor = function(node) {
 		
 		if(!this.neighbors.indexOf(node)==-1) {
 			this.removeNeighbor(node);
@@ -84,9 +110,18 @@ class Node {
 			node.removeNeighbor(this);
 		}
 		
-	}
-	
+	};
 }
+
+
+
+
+
+
+
+
+	
+
 
 
 

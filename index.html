@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<canvas id="gameCanvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+  <head>
+    <title>Dot Bomb</title>
+  </head>
+  
+  	<script src="Main.js"></script>
+  
+  <script>
+  
+  	 function getMousePos(canvas, evt) {
+          var rect = canvas.getBoundingClientRect();
+          return {
+            x: Math.round(evt.clientX - rect.left),
+            y: Math.round(evt.clientY - rect.top)
+          };
+      }
+  	
+	var canv = document.getElementById("gameCanvas");
+	var ctx = canv.getContext("2d");
+	ctx.fillStyle = "#000000";
+	
+	var node1 = new Node(20,20,20);
+	var node2 = new Node(80,20,20);
+	var node3 = new Node(20,80,20);
+	
+	node1.draw(ctx);
+		
+	node1.addNeighbor(node2);
+	node1.addNeighbor(node3);
+	
+	var testGraph = new Graph();
+	testGraph.nodes = [node1, node2, node3];
+	
+	//testGraph.draw(ctx);
+	
+	
+	/*
+	* A simple click listener
+	* checks to see if a node was clicked, if so updates its count
+	* then redraws the test graph
+	*/
+	canv.addEventListener("click", function(evt){
+		coord = getMousePos(canv, evt);
+		for(i=0; i<testGraph.nodes.length; i++){
+			var tempNode = testGraph.nodes[i];
+			if(tempNode.contains(coord.x, coord.y))
+				tempNode.dotCount++;
+		}
+		testGraph.draw(ctx);
+	}, false);
+	
+	testGraph.draw(ctx);
+	
+  </script>
+</html>
