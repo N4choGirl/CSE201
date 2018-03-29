@@ -1,6 +1,5 @@
 # CSE201
 Group 16 Repository
-Feb. 24, 2018
 
 We are creating a multiplayer online game that we will be hosting on a server. 
 The object of the game will be to fill the entire board with your player color. 
