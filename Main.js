@@ -101,13 +101,9 @@ function Node(x,y,radius){
 	
 	this.hasNeighbor = function(node) {
 		
-		if(!this.neighbors.indexOf(node)==-1) {
-			this.removeNeighbor(node);
+		if(this.neighbors.indexOf(node)==-1) {
+			return false;
 		}
-		if(node!=null){
-			if(!node.neighbors.indexOf(this)==-1) {
-				node.removeNeighbor(this);
-			}
-		}
+		return true;
 	};
 }

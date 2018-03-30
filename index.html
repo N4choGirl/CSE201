@@ -51,8 +51,12 @@
 	}
 	
 	var testGraph = new Graph();
-	//If you give it a number >8 or <1, it will act like you gave it the number 8
-	makeGraph(4,5);
+	//If you give it a number >8 for x or y, it will act like you gave it the number 8
+	//If you give it a number <1 for x or y, it will act like you gave it the number 1
+	makeGraph(8,8);
+	
+	//var temp = testGraph.nodes[0];
+	//document.write(temp.neighbors.length);
 	
 	//testGraph.draw(ctx);
 	
