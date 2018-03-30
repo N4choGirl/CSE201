@@ -59,7 +59,7 @@ function Node(x,y,radius){
 	 * draws the node to the given context element of a canvas
 	 */
 	this.draw = function(context){
-		context.fillStyle = "#FF0000";
+		context.fillStyle = "#e0e0e0";
 		//context.fillStyle = this.player.color;
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
