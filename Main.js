@@ -65,8 +65,8 @@ function Node(x,y,radius){
 		context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
 		context.fill();
 		context.fillStyle = "#000000";
-		context.font = "10px Arial";
-		context.fillText("" + this.dotCount, this.x, this.y);
+		context.font = "12px Arial";
+		context.fillText("" + this.dotCount, this.x-3, this.y+3);
 	};
 	
 	this.contains = function(x, y){
@@ -78,27 +78,25 @@ function Node(x,y,radius){
 	}
 	
 	this.addNeighbor = function(node) {
-		
-		if(!this.hasNeighbor(node)) {
-			this.neighbors.push(node);
+		if(node!=null){
+			if(!this.hasNeighbor(node)) {
+				this.neighbors.push(node);
+			}
+			if(!node.hasNeighbor(this)) {
+				node.neighbors.push(node);
+			}
 		}
-		
-		if(!node.hasNeighbor(this)) {
-			node.neighbors.push(node);
-		}
-		
 	};
 	
 	this.removeNeighbor = function(node) {
-		
-		if(this.hasNeighbor(node)) {
-			this.neighbors.splice(this.neighbors.indexOf(node),1);
+		if(node!=null){
+			if(this.hasNeighbor(node)) {
+				this.neighbors.splice(this.neighbors.indexOf(node),1);
+			}
+			if(node.hasNeighbor(this)) {
+				node.neighbors.splice(node.neighbors.indexOf(this),1);
+			}
 		}
-		
-		if(node.hasNeighbor(this)) {
-			node.neighbors.splice(node.neighbors.indexOf(this),1);
-		}
-		
 	};
 	
 	this.hasNeighbor = function(node) {
@@ -106,30 +104,10 @@ function Node(x,y,radius){
 		if(!this.neighbors.indexOf(node)==-1) {
 			this.removeNeighbor(node);
 		}
-		if(!node.neighbors.indexOf(this)==-1) {
-			node.removeNeighbor(this);
+		if(node!=null){
+			if(!node.neighbors.indexOf(this)==-1) {
+				node.removeNeighbor(this);
+			}
 		}
-		
 	};
 }
-
-
-
-
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
-
