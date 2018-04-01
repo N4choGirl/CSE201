@@ -20,6 +20,7 @@
 	var canv = document.getElementById("gameCanvas");
 	var ctx = canv.getContext("2d");
 	ctx.fillStyle = "#000000";
+
 	
 	function makeGraph(nodeX, nodeY) {
 		if(nodeX<1) nodeX=1;
@@ -50,15 +51,21 @@
 		}
 	}
 	
-	var testGraph = new Graph();
+	var testGraph = new Graph(canv);
 	//If you give it a number >8 for x or y, it will act like you gave it the number 8
 	//If you give it a number <1 for x or y, it will act like you gave it the number 1
 	makeGraph(8,8);
 	
+
+	var player1 = new Player("#3169c4");
+	var player2 = new Player("#c43f31");
+	testGraph.players = [player1, player2];
+	
+	
 	//var temp = testGraph.nodes[0];
 	//document.write(temp.neighbors.length);
 	
-	//testGraph.draw(ctx);
+	testGraph.draw(ctx);
 	
 	
 	/*
@@ -67,16 +74,14 @@
 	* then redraws the test graph
 	*/
 	canv.addEventListener("click", function(evt){
+		//debugger;
 		coord = getMousePos(canv, evt);
-		for(i=0; i<testGraph.nodes.length; i++){
-			var tempNode = testGraph.nodes[i];
-			if(tempNode.contains(coord.x, coord.y))
-				tempNode.dotCount++;
-		}
-		testGraph.draw(ctx);
+		testGraph.makeMove(coord.x, coord.y);
+		testGraph.draw();
+
 	}, false);
 	
-	testGraph.draw(ctx);
+	//testGraph.draw(ctx);
 	
   </script>
 </html>

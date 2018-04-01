@@ -11,31 +11,90 @@
  * A graph is essentially a collection of nodes.
  * Which nodes are neighbors to each other relies on the Node class
  */
-function Graph(){
+function Graph(canvas){
+	this.canvas = canvas;
+	this.ctx = canvas.getContext("2d");
 	this.nodes = [];
 	this.players = [];
+	this.turnIndex = 0; // used to keep track of game
+	this.splodeTimeOut = 500;
+	this.animating = false;
+	
+	
+	this.makeMove = function(x, y){
+		console.log("" + x + y);
+		// check nodes for intersection
+		for(i=0; i< this.nodes.length; i++){
+			var node = this.nodes[i];
+			// node intersects
+			if(node.contains(x,y)){
+					if(node.player == this.players[this.turnIndex] ||
+						node.player == null){
+					node.dotCount++;
+					this.updateNode(node, this.players[this.turnIndex]);
+					this.turnIndex = (this.turnIndex + 1)%this.players.length;
+				}
+			}
+				
+		}
+	};
+	
+	this.updateNode = function(node, player){
+		//debugger;
+		node.player = player;
+		var updateList = [];
+
+		if(node.dotCount > node.neighbors.length){
+			node.dotCount = node.dotCount - node.neighbors.length;
+			for(i=0; i<node.neighbors.length; i++){
+				var neigh = node.neighbors[i];
+				neigh.dotCount++;
+				updateList.push(neigh);
+				if(neigh.dotCount > neigh.neighbors.length - 1){
+					neigh.dotCount = neigh.dotCount - neigh.neighbors.length;
+					
+				}
+				
+			}
+			this.draw();
+			
+			for(i=0; i<updateList.length; i++){
+//				while(animating){
+//					//killing some time
+//				}
+				updateList[i].dotCount++;
+				updateList[i].player = player;
+				this.animating = true;
+				this.updateNode(updateList[i], player);
+				
+			}
+			this.draw();
+			
+		}
+
+	};
 	
 	
 	/**
 	 * Draws the graph to the given context
 	 */
-	this.draw = function(context){
+	this.draw = function(){
 		//draw edges first
 		
 		for(i=0; i<this.nodes.length; i++){
 			var tempNode = this.nodes[i];
 			for(j=0; j<tempNode.neighbors.length; j++){
 				var neighbor = tempNode.neighbors[j];
-				context.beginPath();
-				context.moveTo(tempNode.x, tempNode.y);
-				context.lineTo(neighbor.x, neighbor.y);
-				context.stroke();
+				ctx.beginPath();
+				ctx.moveTo(tempNode.x, tempNode.y);
+				ctx.lineTo(neighbor.x, neighbor.y);
+				ctx.stroke();
 			}
 		}
 		
 		//draw nodes on top
 		for(i=0; i<this.nodes.length; i++){
-			this.nodes[i].draw(context);
+			this.nodes[i].draw(ctx);
 		}
 	}
 	
@@ -54,19 +113,24 @@ function Node(x,y,radius){
 	this.radius = radius;
 	this.dotCount  = 0;
 	this.neighbors = [];
+	this.player = null;
 
 	/**
 	 * draws the node to the given context element of a canvas
 	 */
 	this.draw = function(context){
-		context.fillStyle = "#d1d1d1";
-		//context.fillStyle = this.player.color;
+		if(this.player == null)
+			context.fillStyle = "#d1d1d1";
+		else
+			context.fillStyle = this.player.color;
 		context.beginPath();
 		context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
-		context.fill();
+		context.fill(); // node color (inside)
 		context.fillStyle = "#000000";
+		context.stroke(); // outline
 		context.font = "12px Arial";
 		context.fillText("" + this.dotCount, this.x-3, this.y+3);
+		context.fillText("" + this.neighbors.length, this.x-3, this.y+13);
 	};
 	
 	this.contains = function(x, y){
@@ -106,4 +170,10 @@ function Node(x,y,radius){
 		}
 		return true;
 	};
+	
+
+}
+
+function Player(color){
+	this.color = color;
 }
