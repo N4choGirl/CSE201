@@ -143,11 +143,13 @@ function Node(x,y,radius){
 	
 	this.addNeighbor = function(node) {
 		if(node!=null){
-			if(!this.hasNeighbor(node)) {
-				this.neighbors.push(node);
-			}
-			if(!node.hasNeighbor(this)) {
-				node.neighbors.push(node);
+			if(!node.equals(this)){
+				if(!this.hasNeighbor(node)) {
+					this.neighbors.push(node);
+				}
+				if(!node.hasNeighbor(this)) {
+					node.neighbors.push(this);
+				}
 			}
 		}
 	};
@@ -164,14 +166,34 @@ function Node(x,y,radius){
 	};
 	
 	this.hasNeighbor = function(node) {
-		
-		if(this.neighbors.indexOf(node)==-1) {
-			return false;
+		if(node!=null) {
+			for(var i=0;i<this.neighbors.length;i++){
+				if(this.neighbors[i].equals(node)) {
+					return true;
+				}
+			}
 		}
-		return true;
+		return false;
+//		if(this.neighbors.indexOf(node)==-1) {
+//			return false;
+//		}
+//		return true;
 	};
 	
+	this.equals = function(node) {
+		if(node!=null) {
+			if(this.x==node.x) {
+				if(this.y==node.y) {
+					return true;
+				}
+			}
+		}
+		return false;
+	};
 
+	this.toString = function() {
+		document.write("("+this.x+","+this.y+") ");
+	};
 }
 
 function Player(color){
