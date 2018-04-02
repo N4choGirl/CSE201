@@ -18,67 +18,17 @@ function Graph(canvas){
 	this.players = [];
 	this.turnIndex = 0; // used to keep track of game
 	this.splodeTimeOut = 500;
+	this.timer = 0;
 	this.animating = false;
-	
-	
-	this.makeMove = function(x, y){
-		console.log("" + x + y);
-		// check nodes for intersection
-		for(i=0; i< this.nodes.length; i++){
-			var node = this.nodes[i];
-			// node intersects
-			if(node.contains(x,y)){
-					if(node.player == this.players[this.turnIndex] ||
-						node.player == null){
-					node.dotCount++;
-					this.updateNode(node, this.players[this.turnIndex]);
-					this.turnIndex = (this.turnIndex + 1)%this.players.length;
-				}
-			}
-				
-		}
-	};
-	
-	this.updateNode = function(node, player){
-		//debugger;
-		node.player = player;
-		var updateList = [];
-
-		if(node.dotCount > node.neighbors.length){
-			node.dotCount = node.dotCount - node.neighbors.length;
-			for(i=0; i<node.neighbors.length; i++){
-				var neigh = node.neighbors[i];
-				neigh.dotCount++;
-				updateList.push(neigh);
-				if(neigh.dotCount > neigh.neighbors.length - 1){
-					neigh.dotCount = neigh.dotCount - neigh.neighbors.length;
-					
-				}
-				
-			}
-			this.draw();
-			
-			for(i=0; i<updateList.length; i++){
-//				while(animating){
-//					//killing some time
-//				}
-				updateList[i].dotCount++;
-				updateList[i].player = player;
-				this.animating = true;
-				this.updateNode(updateList[i], player);
-				
-			}
-			this.draw();
-			
-		}
-
-	};
 	
 	
 	/**
 	 * Draws the graph to the given context
 	 */
 	this.draw = function(){
+		
+		this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
+		
 		//draw edges first
 		
 		for(i=0; i<this.nodes.length; i++){
@@ -96,7 +46,92 @@ function Graph(canvas){
 		for(i=0; i<this.nodes.length; i++){
 			this.nodes[i].draw(ctx);
 		}
-	}
+	};
+	
+	this.makeMove = function(x, y){
+		console.log("" + x + y);
+		// check nodes for intersection
+		for(i=0; i< this.nodes.length; i++){
+			var node = this.nodes[i];
+			// node intersects
+			if(node.contains(x,y)){
+					if(	node.player == this.players[this.turnIndex] ||
+						node.player == null){
+						
+							node.dotCount++;
+							this.updateNode(node, this.players[this.turnIndex]);
+							this.turnIndex = (this.turnIndex + 1)%this.players.length;
+					}
+			}
+				
+		}
+	};
+	
+	this.updateNode = function myself (node, player){
+		debugger;
+		node.player = player;
+		var updateList = [];
+		//debugger;
+		
+		// overflow detected
+		if(node.dotCount > node.neighbors.length){
+			node.dotCount = node.dotCount - node.neighbors.length;
+			
+			// increment neighbor dots
+			for(i=0; i<node.neighbors.length; i++){
+				var neigh = node.neighbors[i];
+				neigh.dotCount++;
+//				if(neigh.dotCount > neigh.neighbors.length)
+					updateList.push(neigh);
+			}
+			
+			//this.draw();
+			
+			for(i=0; i<updateList.length; i++){
+//				debugger;
+//				if(updateList[i] != null)
+				myself(updateList[i], player);
+				debugger;
+//				updateList.splice(i,1);
+//				setTimeout(function1, this.splodeTimeOut, updateList[i], player);
+			}
+			
+
+//			this.draw();
+		}
+//		this.draw();
+	};
+	
+	/**
+	 * Goes through a graph's nodes and connects any nodes within dist of each other
+	 * note: distance is between  nodes' centers 
+	 */
+	this.addNeighborsByDistance = function(dist){
+		// double loop through nodes
+		for(i=0; i<this.nodes.length; i++){
+			for(j=0; j<this.nodes.length; j++){
+				
+				var dx = (this.nodes[i].x - this.nodes[j].x);
+				var dy = (this.nodes[i].y - this.nodes[j].y);
+				
+				if(Math.sqrt(dx*dx + dy*dy) <= dist){
+					this.nodes[i].addNeighbor(this.nodes[j]);
+				}
+			}
+		}
+	};
+	
+	
+
+	
+	/**
+	 * Stops the animating toggle
+	 * Put in a function for callback purposes
+	 */
+	this.timerInc = function(inc){
+		//debugger;
+		this.timer = this.timer + inc;
+	};
 	
 }
 
