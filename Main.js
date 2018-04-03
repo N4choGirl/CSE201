@@ -80,6 +80,9 @@ function Graph(canvas){
 			// increment neighbor dots
 			for(i=0; i<node.neighbors.length; i++){
 				var neigh = node.neighbors[i];
+				if(neigh.player!=node.player) {
+					neigh.dotCount=0;
+				}
 				neigh.dotCount++;
 //				if(neigh.dotCount > neigh.neighbors.length)
 					updateList.push(neigh);
