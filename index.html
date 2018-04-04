@@ -79,9 +79,15 @@
 		coord = getMousePos(canv, evt);
 		testGraph.makeMove(coord.x, coord.y);
 		testGraph.draw();
+		while(testGraph.splodeList.length > 0){
+			wait(200);
+			testGraph.updateNode();
+			testGraph.draw();
+		}
+		testGraph.draw();
 	}, false);
 	
-	//testGraph.draw(ctx);
+
 	
   </script>
 </html>

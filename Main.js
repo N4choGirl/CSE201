@@ -20,6 +20,7 @@ function Graph(canvas){
 	this.splodeTimeOut = 500;
 	this.timer = 0;
 	this.animating = false;
+	this.splodeList = [];
 	
 	
 	/**
@@ -54,12 +55,16 @@ function Graph(canvas){
 		for(i=0; i< this.nodes.length; i++){
 			var node = this.nodes[i];
 			// node intersects
+			//debugger;
 			if(node.contains(x,y)){
+				debugger;
 					if(	node.player == this.players[this.turnIndex] ||
 						node.player == null){
-						
+							debugger;
 							node.dotCount++;
-							this.updateNode(node, this.players[this.turnIndex]);
+							node.player = this.players[this.turnIndex];
+							this.splodeList.push(node);
+							this.updateNode();
 							this.turnIndex = (this.turnIndex + 1)%this.players.length;
 					}
 			}
@@ -67,42 +72,30 @@ function Graph(canvas){
 		}
 	};
 	
-	this.updateNode = function myself (node, player){
+	this.updateNode = function (){
 		debugger;
-		node.player = player;
-		var updateList = [];
+		var node = this.splodeList.shift();
 		//debugger;
 		
-		// overflow detected
+
+		debugger;
 		if(node.dotCount > node.neighbors.length){
-			node.dotCount = node.dotCount - node.neighbors.length;
+			var neighInc = 0;
 			
-			// increment neighbor dots
+			while(node.dotCount > node.neighbors.length){
+				node.dotCount = node.dotCount - node.neighbors.length;
+				neighInc++;
+			}
+			
 			for(i=0; i<node.neighbors.length; i++){
 				var neigh = node.neighbors[i];
-				if(neigh.player!=node.player) {
-					neigh.dotCount=0;
-				}
-				neigh.dotCount++;
-//				if(neigh.dotCount > neigh.neighbors.length)
-					updateList.push(neigh);
+				neigh.dotCount = neigh.dotCount + neighInc;
+				neigh.player = node.player;
+				this.splodeList.push(neigh);
 			}
-			
-			//this.draw();
-			
-			for(i=0; i<updateList.length; i++){
-//				debugger;
-//				if(updateList[i] != null)
-				myself(updateList[i], player);
-				debugger;
-//				updateList.splice(i,1);
-//				setTimeout(function1, this.splodeTimeOut, updateList[i], player);
-			}
-			
-
-//			this.draw();
 		}
-//		this.draw();
+
+
 	};
 	
 	/**
@@ -236,4 +229,12 @@ function Node(x,y,radius){
 
 function Player(color){
 	this.color = color;
+}
+
+function wait(ms){
+	   var start = new Date().getTime();
+	   var end = start;
+	   while(end < start + ms) {
+	     end = new Date().getTime();
+	   }
 }
