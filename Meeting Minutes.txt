@@ -1,3 +1,18 @@
+Meeting With TA on Apr. 5, 2018 - All Present
+
+
+        Showed TA current product and discuss bugs thus far
+        Emily is happy with our progress and thinks we are on schedule
+        She has no new things to add.
+
+
+Meeting on Apr. 4, 2018 - Missing Dante
+
+
+        "Agenda"
+        1. Discuss sprint plan - we are so far on schedule
+
+
 Meeting With TA on Mar. 29, 2018 - Missing Dante
 
 
@@ -148,6 +163,4 @@ Meeting on Feb. 13, 2018 - All Present
 
         Didn’t use suggested project idea b/c:
                 Our ideas give us more room for user input and change and also allows us to develop 
-                skills we will more likely need or want for future careers.
         
-        Plan to use JavaScript or HTML
