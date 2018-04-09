@@ -50,7 +50,7 @@ function Graph(canvas){
 	};
 	
 	this.makeMove = function(x, y){
-		console.log("" + x + y);
+		//console.log("" + x + y);
 		// check nodes for intersection
 		for(i=0; i< this.nodes.length; i++){
 			var node = this.nodes[i];
@@ -117,18 +117,7 @@ function Graph(canvas){
 		}
 	};
 	
-	
 
-	
-	/**
-	 * Stops the animating toggle
-	 * Put in a function for callback purposes
-	 */
-	this.timerInc = function(inc){
-		//debugger;
-		this.timer = this.timer + inc;
-	};
-	
 }
 
 
@@ -160,8 +149,8 @@ function Node(x,y,radius){
 		context.fillStyle = "#000000";
 		context.stroke(); // outline
 		context.font = "12px Arial";
-		context.fillText("" + this.dotCount, this.x-3, this.y+3);
-		context.fillText("" + this.neighbors.length, this.x-3, this.y+13);
+		context.fillText("" + this.dotCount, this.x-3, this.y+4);
+		//context.fillText("" + this.neighbors.length, this.x-3, this.y+13);
 	};
 	
 	this.contains = function(x, y){
