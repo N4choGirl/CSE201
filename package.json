@@ -2,7 +2,7 @@
   "name": "cse201",
   "version": "1.0.0",
   "description": "Group 16 Repository",
-  "main": "Graphs.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

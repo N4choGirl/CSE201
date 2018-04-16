@@ -5,75 +5,78 @@
     <title>Dot Bomb</title>
   </head>
   
-  	<script src="Main.js"></script>
-  	<script src="Graphs.js"></script>
+
+	<script src="/socket.io/socket.io.js"></script>
   
   <script>
   
+	var testGraph;
+	var id;
+	
 	function getMousePos(canvas, evt) {
           var rect = canvas.getBoundingClientRect();
           return {
             x: Math.round(evt.clientX - rect.left),
             y: Math.round(evt.clientY - rect.top)
           };
-      }
+	}
   	
 	var canv = document.getElementById("gameCanvas");
 	var ctx = canv.getContext("2d");
 	ctx.fillStyle = "#000000";
+
 	
-	/*
-	function makeGraph(nodeX, nodeY) {
-		if(nodeX<1) nodeX=1;
-		if(nodeX>8) nodeX=8;
-		if(nodeY<1) nodeY=1;
-		if(nodeY>8) nodeY=8;
-		var numberOfNodes = nodeX*nodeY;
-		for(var y=30;y<=(nodeY-1)*60+30;y+=60){
-			for(var x=30;x<=(nodeX-1)*60+30;x+=60){
-				testGraph.nodes.push(new Node(x,y,22)); 
+	var socket = io.connect('http://localhost:3000');
+    socket.on('graphUpdate', function (data) {
+		debugger;
+		drawGraph(canv, data);
+        console.log(data);
+    });
+	socket.on('welcome', function(newId){
+		id = newId;
+	});
+
+	function drawGraph(canvas, graph){
+		var context = canvas.getContext("2d");
+		context.clearRect(0,0,canvas.width, canvas.height);
+		
+		//draw edges first
+		
+		for(i=0; i<graph.nodes.length; i++){
+			var tempNode = graph.nodes[i];
+			for(j=0; j<tempNode.neighbors.length; j++){
+				var neighbor = graph.nodes[tempNode.neighbors[j]];
+				context.beginPath();
+				context.moveTo(tempNode.x, tempNode.y);
+				context.lineTo(neighbor.x, neighbor.y);
+				context.stroke();
 			}
 		}
-		for(var i=0;i<testGraph.nodes.length-1;i++){
-			var tempNode = testGraph.nodes[i];
-			if(i-nodeX>=0) {
-				tempNode.addNeighbor(testGraph.nodes[i-nodeX]);
-			}
-			if(i+nodeX<=numberOfNodes) {
-				tempNode.addNeighbor(testGraph.nodes[i+nodeX]);
-			}
-			if(i+1<=numberOfNodes && (i+1)%nodeX!=0) {
-				tempNode.addNeighbor(testGraph.nodes[i+1]);
-			}
-			if(i-1>=0 && i%nodeX!=0) {
-				tempNode.addNeighbor(testGraph.nodes[i-1]);
-			}
-			testGraph.nodes[i] = tempNode;
+		
+		for(i=0; i<graph.nodes.length; i++){
+			drawNode(canvas, graph.nodes[i]);
 		}
 	}
-	*/
-	
-	//var testGraph = new Graph(canv);
-	//If you give it a number >8 for x or y, it will act like you gave it the number 8
-	//If you give it a number <1 for x or y, it will act like you gave it the number 1
-	//makeGraph(8,8);
-	
-	var testGraph = new RectGraph(8,8, canv);
-	
-	var player1 = new Player("#3169c4");
-	var player2 = new Player("#c43f31");
-	testGraph.players = [player1, player2];
 	
 	
-	var temp = testGraph.nodes[10];
-	//document.write(temp.neighbors.length);
+	function drawNode(canvas, node){
+		var context = canvas.getContext("2d");
+		if(node.player == null)
+			context.fillStyle = "#d1d1d1";
+		else
+			context.fillStyle = node.player.color;
+		
+		context.beginPath();
+		context.arc(node.x, node.y, node.radius, 0, 2*Math.PI);
+		context.fill(); // node color (inside)
+		context.fillStyle = "#000000";
+		context.stroke(); // outline
+		context.font = "12px Arial";
+		context.fillText("" + node.dotCount, node.x-3, node.y+4);
+	}
+
 	
-	testGraph.draw(ctx);
-	//temp.toString();
-	//for(var i=0;i<temp.neighbors.length;i++) {
-		//temp.neighbors[i].toString();
-	//}
-	
+
 	/*
 	* A simple click listener
 	* checks to see if a node was clicked, if so updates its count
@@ -82,9 +85,10 @@
 	canv.addEventListener("click", function(evt){
 		//debugger;
 		coord = getMousePos(canv, evt);
-		testGraph.makeMove(coord.x, coord.y);
-		testGraph.draw();
 		
+		socket.emit("click", coord, id);
+		
+		/*
 		var ii = setInterval(function(){
 			if(testGraph.splodeList.length > 0){
 				testGraph.updateNode();
@@ -94,7 +98,7 @@
 				clearInterval(ii);
 			}
 		}, 300);
-		
+		*/
 
 		
 	}, false);
