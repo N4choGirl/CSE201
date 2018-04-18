@@ -77,6 +77,14 @@ function Graph(){
 	this.animating = false;
 	this.splodeList = [];
 	
+	this.getNodeByID = function(id) {
+		for(i=0;i<this.nodes.length;i++){
+			var node = this.nodes[i];
+			if(node.id==id) {
+				return node;
+			}
+		}
+	}
 	
 	/**
 	 * Draws the graph to the given context
