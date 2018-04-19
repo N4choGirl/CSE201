@@ -32,7 +32,7 @@ io.sockets.on('connection', function (socket) {
 		if(graph.players[graph.turnIndex].id == id){
 			console.log(coord);
 			graph.makeMove(coord.x, coord.y);
-			socket.emit('graphUpdate', graph);
+			io.sockets.emit('graphUpdate', graph);
 		}
     });
 });
@@ -67,14 +67,9 @@ function RectGraph(width, height){
 	this.addNeighborsByDistance(65);
 }
 function Graph(){
-	this.canvas;
-	this.ctx;
 	this.nodes = [];
 	this.players = [];
 	this.turnIndex = 0; // used to keep track of game
-	this.splodeTimeOut = 500;
-	this.timer = 0;
-	this.animating = false;
 	this.splodeList = [];
 	
 	this.getNodeByID = function(id) {
@@ -86,32 +81,7 @@ function Graph(){
 		}
 	}
 	
-	/**
-	 * Draws the graph to the given context
 
-	this.draw = function(){
-		
-		this.ctx.clearRect(0,0,this.canvas.width, this.canvas.height);
-		
-		//draw edges first
-		
-		for(i=0; i<this.nodes.length; i++){
-			var tempNode = this.nodes[i];
-			for(j=0; j<tempNode.neighbors.length; j++){
-				var neighbor = tempNode.neighbors[j];
-				ctx.beginPath();
-				ctx.moveTo(tempNode.x, tempNode.y);
-				ctx.lineTo(neighbor.x, neighbor.y);
-				ctx.stroke();
-			}
-		}
-		
-		//draw nodes on top
-		for(i=0; i<this.nodes.length; i++){
-			this.nodes[i].draw(ctx);
-		}
-	};
-	*/
 	
 	this.makeMove = function(x, y){
 		//console.log("" + x + y);
@@ -200,23 +170,7 @@ function Node(x,y,radius, id){
 	this.neighbors = [];
 	this.player = null;
 
-	/**
-	 * draws the node to the given context element of a canvas
-	 */
-	this.draw = function(context){
-		if(this.player == null)
-			context.fillStyle = "#d1d1d1";
-		else
-			context.fillStyle = this.player.color;
-		context.beginPath();
-		context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
-		context.fill(); // node color (inside)
-		context.fillStyle = "#000000";
-		context.stroke(); // outline
-		context.font = "12px Arial";
-		context.fillText("" + this.dotCount, this.x-3, this.y+4);
-		//context.fillText("" + this.neighbors.length, this.x-3, this.y+13);
-	};
+
 	
 	this.contains = function(x, y){
 		var dx = this.x - x;
@@ -253,16 +207,12 @@ function Node(x,y,radius, id){
 	this.hasNeighbor = function(node) {
 		if(node!=null) {
 			for(var i=0;i<this.neighbors.length;i++){
-				if(this.neighbors[i].equals(node)) {
+				if(this.neighbors[i] == node.id) {
 					return true;
 				}
 			}
 		}
 		return false;
-//		if(this.neighbors.indexOf(node)==-1) {
-//			return false;
-//		}
-//		return true;
 	};
 	
 	this.equals = function(node) {
