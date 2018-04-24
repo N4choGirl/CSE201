@@ -9,14 +9,16 @@ var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
 var port = 3000;
 var fs = require('fs');
-var graph = new Graph();
+var graph = new RectGraph(8,8);
 var id = 0;
 
+/*
 graph.nodes.push(new Node(30,30,20,0));
 graph.nodes.push(new Node(120,30,20,1));
 graph.nodes.push(new Node(30,120,20,2)); 
 graph.nodes[0].addNeighbor(graph.nodes[1]);
 graph.addNeighborsByDistance(61);
+*/
 
 
 app.listen(port);
@@ -29,42 +31,47 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('graphUpdate', graph);
 
     socket.on("click", function(coord, id) {
+		console.log(coord);
 		if(graph.players[graph.turnIndex].id == id){
-			console.log(coord);
 			graph.makeMove(coord.x, coord.y);
 			io.sockets.emit('graphUpdate', graph);
+			var interval = setInterval(function(){
+				if(graph.splodeList.length > 0){
+					graph.updateNode();
+					io.sockets.emit('graphUpdate', graph);
+				}
+				else{
+					clearInterval(interval);
+				}
+			}, 300);
 		}
     });
 });
 
 
-function RectGraph(width, height){
+function RectGraph(rows, columns){
 
 	Graph.call(this);
-	//RectGraph.prototype = Object.create(Graph.Prototype);
-	//RectGraph.prototype.constructor = RectGraph;
-	
-	this.width = width;
-	this.height = height;
 
-	
-	var radius = 22;
-	var xStart = radius;
-	var yStart = radius;
 	// distances by which nodes are placed
-	var xDist = (canvas.width - 2 * radius)/(width - 1);
-	var yDist = (canvas.height - 2 * radius)/(height - 1);
-
+	var xDist = 100/(rows + 1);
+	var yDist = 100/(columns + 1);
+	var dist = Math.min(xDist, yDist);
+	var xStart = dist;
+	var yStart = dist;
+	var radius = dist/3;
 	
-	for(i=0; i<width; i++){
-		for(j=0; j<height; j++){
-			this.nodes.push(new Node(xStart + i*xDist, yStart + j*yDist, radius));
+	var count = 0;
+	for(i=0; i<rows; i++){
+		for(j=0; j<columns; j++){
+			this.nodes.push(new Node(xStart + i*xDist, yStart + j*yDist, radius, count));
+			count++;
 		}
 	}
 	
-	debugger;
 	
-	this.addNeighborsByDistance(65);
+	
+	this.addNeighborsByDistance(dist + 1);
 }
 function Graph(){
 	this.nodes = [];
@@ -91,10 +98,8 @@ function Graph(){
 			// node intersects
 			//debugger;
 			if(node.contains(x,y)){
-				debugger;
 					if(	node.player == this.players[this.turnIndex] ||
 						node.player == null){
-							debugger;
 							node.dotCount++;
 							node.player = this.players[this.turnIndex];
 							this.splodeList.push(node);
@@ -107,12 +112,9 @@ function Graph(){
 	};
 	
 	this.updateNode = function (){
-		debugger;
 		var node = this.splodeList.shift();
-		//debugger;
-		
-
-		debugger;
+		//console.log("node: " + node);
+		//console.log("neigh: " + node.neighbors);
 		if(node.dotCount > node.neighbors.length){
 			var neighInc = 0;
 			
@@ -121,12 +123,20 @@ function Graph(){
 				neighInc++;
 			}
 			
-			for(i=0; i<node.neighbors.length; i++){
-				var neigh = node.neighbors[i];
+			console.log("start");
+			
+			console.log(node.neighbors.length);
+			for(j=0; j<node.neighbors.length; j++){
+				console.log(j);
+				var neigh = this.getNodeByID(node.neighbors[j]);
+				console.log(j);
 				neigh.dotCount = neigh.dotCount + neighInc;
 				neigh.player = node.player;
 				this.splodeList.push(neigh);
 			}
+			
+			console.log("end");
+			console.log("");
 		}
 
 
@@ -136,16 +146,20 @@ function Graph(){
 	 * Goes through a graph's nodes and connects any nodes within dist of each other
 	 * note: distance is between  nodes' centers 
 	 */
-	this.addNeighborsByDistance = function(dist){
+	this.addNeighborsByDistance = function(distance){
 		// double loop through nodes
 		for(i=0; i<this.nodes.length; i++){
 			for(j=0; j<this.nodes.length; j++){
-				
-				var dx = (this.nodes[i].x - this.nodes[j].x);
-				var dy = (this.nodes[i].y - this.nodes[j].y);
-				
-				if(Math.sqrt(dx*dx + dy*dy) <= dist){
-					this.nodes[i].addNeighbor(this.nodes[j]);
+				if( j != i) {
+					var node1 = this.nodes[i];
+					var node2 = this.nodes[j];
+					var dx = (this.nodes[i].x - this.nodes[j].x);
+					var dy = (this.nodes[i].y - this.nodes[j].y);
+					
+					if(Math.sqrt(dx*dx + dy*dy) <= distance){
+						this.nodes[i].addNeighbor(this.nodes[j]);
+						//Console.log(this.nodes[i].x, + ", "  + this.nodes[i
+					}
 				}
 			}
 		}
@@ -225,7 +239,7 @@ function Node(x,y,radius, id){
 	};
 
 	this.toString = function() {
-		document.write("("+this.x+","+this.y+") ");
+		//document.write("("+this.x+","+this.y+") ");
 	};
 }
 

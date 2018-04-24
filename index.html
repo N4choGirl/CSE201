@@ -28,7 +28,6 @@
 	
 	var socket = io.connect('http://localhost:3000');
     socket.on('graphUpdate', function (data) {
-		debugger;
 		drawGraph(canv, data);
         console.log(data);
     });
@@ -39,6 +38,7 @@
 	function drawGraph(canvas, graph){
 		var context = canvas.getContext("2d");
 		context.clearRect(0,0,canvas.width, canvas.height);
+		scaleGraph(graph, canvas.width/100);
 		
 		//draw edges first
 		
@@ -74,6 +74,15 @@
 		context.font = "12px Arial";
 		context.fillText("" + node.dotCount, node.x-3, node.y+4);
 	}
+	
+	function scaleGraph(graph, s){
+		for(i=0; i<graph.nodes.length; i++){
+			var currNode = graph.nodes[i];
+			currNode.x = currNode.x * s;
+			currNode.y = currNode.y * s;
+			currNode.radius = currNode.radius * s;
+		}
+	}
 
 	
 
@@ -85,6 +94,9 @@
 	canv.addEventListener("click", function(evt){
 		//debugger;
 		coord = getMousePos(canv, evt);
+		// scale back to graph coordinates
+		coord.x = coord.x * 100/canv.width;
+		coord.y = coord.y * 100/canv.height;
 		
 		socket.emit("click", coord, id);
 		
