@@ -1,50 +1,21 @@
-var handler = function(req, res) {
-    fs.readFile('./index.html', function (err, data) {
-        if(err) throw err;
-        res.writeHead(200);
-        res.end(data);
-    });
-}
-var app = require('http').createServer(handler);
-var io = require('socket.io').listen(app);
-var port = 3000;
-var fs = require('fs');
-var graph = new RectGraph(8,8);
-var id = 0;
-var roomPlayers = [];
+var node1 = new Node(0,0,20,1);
+var node2 = new Node(0,0,20,2);
+
+node1.addNeighbor(node2);
+console.log(node1.hasNeighbor(node2)); // true
 
 
-app.listen(port);
 
-io.sockets.on('connection', function (socket) {
-	var newPlayer = new Player(getRandomColor(), id);
-	roomPlayers.push(newPlayer);
-	//if(!graph.inProgress)
-		graph.addPlayer(newPlayer);
-	socket.emit('welcome', id);
-	id++;
-	
-	socket.emit('graphUpdate', graph);
 
-    socket.on("click", function(coord, id) {
-		console.log(coord);
-		var temp = graph.getWinner();
-		console.log(temp);
-		if(graph.players[graph.turnIndex].id == id){
-			graph.makeMove(coord.x, coord.y);
-			io.sockets.emit('graphUpdate', graph);
-			var interval = setInterval(function(){
-				if(graph.splodeList.length > 0){
-					graph.updateNode();
-					io.sockets.emit('graphUpdate', graph);
-				}
-				else{
-					clearInterval(interval);
-				}
-			}, 300);
-		}
-    });
-});
+
+
+
+
+
+
+
+
+
 
 
 function RectGraph(rows, columns){
@@ -86,6 +57,7 @@ function Graph(){
 		this.inProgress = false;
 	};
 	
+	//TEST
 	this.addPlayer = function(newPlayer){
 		var index = this.players.indexOf(newPlayer);
 		console.log(index);
@@ -93,6 +65,7 @@ function Graph(){
 			this.players.push(newPlayer);
 		}
 	};
+	//TEST
 	this.removePlayer = function(toRemove){
 		var index = this.players.indexOf(toRemove);
 		if(index > -1){
@@ -233,6 +206,7 @@ function Node(x,y,radius, id){
 		return false;
 	}
 	
+	//TEST
 	this.addNeighbor = function(node) {
 		if(node!=null){
 			if(!node.equals(this)){
@@ -245,7 +219,7 @@ function Node(x,y,radius, id){
 			}
 		}
 	};
-	
+	//TEST
 	this.removeNeighbor = function(node) {
 		if(node!=null){
 			if(this.hasNeighbor(node)) {
@@ -256,7 +230,7 @@ function Node(x,y,radius, id){
 			}
 		}
 	};
-	
+	//TEST
 	this.hasNeighbor = function(node) {
 		if(node!=null) {
 			for(var i=0;i<this.neighbors.length;i++){

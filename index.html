@@ -1,6 +1,13 @@
 <!doctype html>
 <html>
 <canvas id="gameCanvas" width="480" height="480" style="border:1px solid #000000;"></canvas>
+<p>
+<div id='gameText'>
+We got some temp text
+</div>
+</p>
+<ul id='playerList'>
+</ul>
   <head>
     <title>Dot Bomb</title>
   </head>
@@ -23,18 +30,34 @@
   	
 	var canv = document.getElementById("gameCanvas");
 	var ctx = canv.getContext("2d");
+	var div = document.getElementById('gameText');
 	ctx.fillStyle = "#000000";
 
 	
 	var socket = io.connect('http://localhost:3000');
     socket.on('graphUpdate', function (data) {
 		drawGraph(canv, data);
+		div.innerHTML = "Player " + (data.turnIndex + 1) + "'s turn ";
+		//div.style.color = data.players[data.turnIndex].color;
         console.log(data);
+		
+		clearPlayerList();
+		for(var i=0; i<data.players.length; i++){
+			var li = document.createElement("li");
+			li.appendChild(document.createTextNode("Player: " + i));
+			playerList.appendChild(li);
+		}
     });
 	socket.on('welcome', function(newId){
 		id = newId;
 	});
 
+	function clearPlayerList(){
+		while(playerList.hasChildNodes()){
+			playerList.childNodes[0];
+		}
+	}
+	
 	function drawGraph(canvas, graph){
 		var context = canvas.getContext("2d");
 		context.clearRect(0,0,canvas.width, canvas.height);
