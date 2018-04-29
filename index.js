@@ -27,9 +27,39 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.emit('graphUpdate', graph);
 	
-	
+	/*
+	*	Chat message recieved
+	*/
 	socket.on('chat message', function(msg){
-		io.emit('chat message', msg);
+		if(msg.content.charAt(0) == '/'){ // chat command recognized
+			
+			//console.log(msg);
+			var params = msg.content.split(' ');
+			
+			var command = params[0].slice(1);
+			
+			switch (command) {
+				case 'name':
+					var newName;
+					if(params[1]){ // ensure a name was given
+						var newName = params[1];
+						//console.log(newName);
+						var thisPlayer = getPlayerById(msg.playerId);
+						var oldName = thisPlayer.name;
+						thisPlayer.name = newName;
+						
+						io.emit('chat message', 'Server: ' + oldName + ' has changed their name to ' + newName);
+						io.emit('playerUpdate', roomPlayers);
+					} else {
+						// TODO serverMessage(didnt enter params, socket)
+					}
+					break;
+			}
+			
+		}
+		else{
+			io.emit('chat message', msg.content);
+		}
 	});
 	
 	/*
@@ -294,6 +324,7 @@ function Node(x,y,radius, id){
 function Player(color, id){
 	this.color = color;
 	this.id = id;
+	this.name = 'Player ' + id;
 }
 
 function getRandomColor() {
@@ -303,4 +334,12 @@ function getRandomColor() {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
+}
+
+function getPlayerById(id) {
+	for(var j=0; j<roomPlayers.length; j++){
+		if(roomPlayers[j].id == id)
+			return roomPlayers[j];
+	}
+	return null;
 }

@@ -52,7 +52,10 @@
 		var socket = io.connect('localhost:3000');
 		
 		$('form').submit(function(){
-			socket.emit('chat message', $('#m').val());
+			var msg = { playerId : id,
+						content: $('#m').val() };
+			debugger;
+			socket.emit('chat message', msg);
 			$('#m').val('');
 			return false;
 		});
@@ -72,12 +75,17 @@
 			clearPlayerList();
 			for(var k=0; k<players.length; k++){
 				var li = document.createElement("li");
-				var youString;
-				if(players[k].id = id)
-					youString = " (you)";
-				else
-					youString = "";
-				li.appendChild(document.createTextNode("Player: " + (k + 1)));
+				var currPlayer = players[k];
+				var name = "";
+				
+				if(currPlayer.id + "" == currPlayer.name){ // player has not chosen a new name
+					name = "Player: " + id;
+				}
+				else {
+					name = currPlayer.name;
+				}
+				
+				li.appendChild(document.createTextNode(name));
 				playerList.appendChild(li);
 			}
 		});
