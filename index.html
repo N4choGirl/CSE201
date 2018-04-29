@@ -1,144 +1,189 @@
 <!doctype html>
 <html>
-<canvas id="gameCanvas" width="480" height="480" style="border:1px solid #000000;"></canvas>
-<p>
-<div id='gameText'>
-We got some temp text
-</div>
-</p>
-<ul id='playerList'>
-</ul>
-  <head>
-    <title>Dot Bomb</title>
-  </head>
-  
-
-	<script src="/socket.io/socket.io.js"></script>
-  
-  <script>
-  
-	var testGraph;
-	var id;
-	
-	function getMousePos(canvas, evt) {
-          var rect = canvas.getBoundingClientRect();
-          return {
-            x: Math.round(evt.clientX - rect.left),
-            y: Math.round(evt.clientY - rect.top)
-          };
-	}
-  	
-	var canv = document.getElementById("gameCanvas");
-	var ctx = canv.getContext("2d");
-	var div = document.getElementById('gameText');
-	ctx.fillStyle = "#000000";
-
-	
-	var socket = io.connect('http://localhost:3000');
-    socket.on('graphUpdate', function (data) {
-		drawGraph(canv, data);
-		div.innerHTML = "Player " + (data.turnIndex + 1) + "'s turn ";
-		//div.style.color = data.players[data.turnIndex].color;
-        console.log(data);
+	<head>
+		<title>Dot Bomb</title>
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 		
-		clearPlayerList();
-		for(var i=0; i<data.players.length; i++){
-			var li = document.createElement("li");
-			li.appendChild(document.createTextNode("Player: " + i));
-			playerList.appendChild(li);
-		}
-    });
-	socket.on('welcome', function(newId){
-		id = newId;
-	});
+		<style>
+			* { margin: 0; padding: 0; box-sizing: border-box; }
+			body { font: 13px Helvetica, Arial; }
+			canvas { float:left; }
+			#infoBox { float:left; width: 300px; padding-left: 20px }
+			#chatBox { float:left; height: 500px; min-width: 400px}
+			form { background: #000; padding: 3px; width: 100%; }
+			form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+			form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+			#messages { list-style-type: none; margin: 0; padding: 0; width: 100%; height: 100%; overflow:scroll }
+			#messages li { padding: 5px 10px; }
+			#messages li:nth-child(odd) { background: #eee; }
+		</style>
 
-	function clearPlayerList(){
-		while(playerList.hasChildNodes()){
-			playerList.childNodes[0];
-		}
-	}
+	</head>
 	
-	function drawGraph(canvas, graph){
-		var context = canvas.getContext("2d");
-		context.clearRect(0,0,canvas.width, canvas.height);
-		scaleGraph(graph, canvas.width/100);
+	<body>
+		<canvas id="gameCanvas" width="480" height="480" style="border:1px solid #000000;"></canvas>
+		<div id='infoBox'>
+			<div id='gameText'></div>
+			<ul id='playerList'></ul>
+		</div>
+		<div id='chatBox'>
+			<ul id="messages"></ul>
 		
-		//draw edges first
+			<form action="">
+				<input id="m" autocomplete="off" /><button>Send</button>
+			</form>
+		</div>
+	</body>
+
+	
+	<script>
+	  
+		var testGraph;
+		var id;
+		var canv = document.getElementById("gameCanvas");
+		var ctx = canv.getContext("2d");
+		var div = document.getElementById('gameText');
+		ctx.fillStyle = "#000000";
+
+		/***********************************
+		* SOCKET.IO Functions
+		***********************************/
+		var socket = io.connect('localhost:3000');
 		
-		for(i=0; i<graph.nodes.length; i++){
-			var tempNode = graph.nodes[i];
-			for(j=0; j<tempNode.neighbors.length; j++){
-				var neighbor = graph.nodes[tempNode.neighbors[j]];
-				context.beginPath();
-				context.moveTo(tempNode.x, tempNode.y);
-				context.lineTo(neighbor.x, neighbor.y);
-				context.stroke();
+		$('form').submit(function(){
+			socket.emit('chat message', $('#m').val());
+			$('#m').val('');
+			return false;
+		});
+		
+		socket.on('chat message', function(msg){
+			$('#messages').append($('<li>').text(msg));
+		});
+		
+		socket.on('graphUpdate', function (data) {
+			drawGraph(canv, data);
+			div.innerHTML = "Player " + (data.turnIndex + 1) + "'s turn ";
+			//div.style.color = data.players[data.turnIndex].color;
+			console.log(data);
+
+		});
+		socket.on('playerUpdate', function(players){
+			clearPlayerList();
+			for(var k=0; k<players.length; k++){
+				var li = document.createElement("li");
+				var youString;
+				if(players[k].id = id)
+					youString = " (you)";
+				else
+					youString = "";
+				li.appendChild(document.createTextNode("Player: " + (k + 1)));
+				playerList.appendChild(li);
+			}
+		});
+		socket.on('welcome', function(newId){
+			id = newId;
+		});
+
+		
+		/***********************************
+		* RUNTIME Functions
+		***********************************/
+		function clearPlayerList(){
+			while(playerList.hasChildNodes()){
+				playerList.removeChild(playerList.childNodes[0]);
 			}
 		}
 		
-		for(i=0; i<graph.nodes.length; i++){
-			drawNode(canvas, graph.nodes[i]);
+		function drawGraph(canvas, graph){
+			var context = canvas.getContext("2d");
+			context.clearRect(0,0,canvas.width, canvas.height);
+			scaleGraph(graph, canvas.width/100);
+			
+			//draw edges first
+			
+			for(i=0; i<graph.nodes.length; i++){
+				var tempNode = graph.nodes[i];
+				for(j=0; j<tempNode.neighbors.length; j++){
+					var neighbor = graph.nodes[tempNode.neighbors[j]];
+					context.beginPath();
+					context.moveTo(tempNode.x, tempNode.y);
+					context.lineTo(neighbor.x, neighbor.y);
+					context.stroke();
+				}
+			}
+			
+			for(i=0; i<graph.nodes.length; i++){
+				drawNode(canvas, graph.nodes[i]);
+			}
 		}
-	}
-	
-	
-	function drawNode(canvas, node){
-		var context = canvas.getContext("2d");
-		if(node.player == null)
-			context.fillStyle = "#d1d1d1";
-		else
-			context.fillStyle = node.player.color;
 		
-		context.beginPath();
-		context.arc(node.x, node.y, node.radius, 0, 2*Math.PI);
-		context.fill(); // node color (inside)
-		context.fillStyle = "#000000";
-		context.stroke(); // outline
-		context.font = "12px Arial";
-		context.fillText("" + node.dotCount, node.x-3, node.y+4);
-	}
-	
-	function scaleGraph(graph, s){
-		for(i=0; i<graph.nodes.length; i++){
-			var currNode = graph.nodes[i];
-			currNode.x = currNode.x * s;
-			currNode.y = currNode.y * s;
-			currNode.radius = currNode.radius * s;
+		
+		function drawNode(canvas, node){
+			var context = canvas.getContext("2d");
+			if(node.player == null)
+				context.fillStyle = "#d1d1d1";
+			else
+				context.fillStyle = node.player.color;
+			
+			context.beginPath();
+			context.arc(node.x, node.y, node.radius, 0, 2*Math.PI);
+			context.fill(); // node color (inside)
+			context.fillStyle = "#000000";
+			context.stroke(); // outline
+			context.font = "12px Arial";
+			context.fillText("" + node.dotCount, node.x-3, node.y+4);
 		}
-	}
-
-	
-
-	/*
-	* A simple click listener
-	* checks to see if a node was clicked, if so updates its count
-	* then redraws the test graph
-	*/
-	canv.addEventListener("click", function(evt){
-		//debugger;
-		coord = getMousePos(canv, evt);
-		// scale back to graph coordinates
-		coord.x = coord.x * 100/canv.width;
-		coord.y = coord.y * 100/canv.height;
 		
-		socket.emit("click", coord, id);
+		function scaleGraph(graph, s){
+			for(i=0; i<graph.nodes.length; i++){
+				var currNode = graph.nodes[i];
+				currNode.x = currNode.x * s;
+				currNode.y = currNode.y * s;
+				currNode.radius = currNode.radius * s;
+			}
+		}
 		
+		function getMousePos(canvas, evt) {
+			  var rect = canvas.getBoundingClientRect();
+			  return {
+				x: Math.round(evt.clientX - rect.left),
+				y: Math.round(evt.clientY - rect.top)
+			  };
+		}
+
+		
+
 		/*
-		var ii = setInterval(function(){
-			if(testGraph.splodeList.length > 0){
-				testGraph.updateNode();
-				testGraph.draw();
-			}
-			else{
-				clearInterval(ii);
-			}
-		}, 300);
+		* A simple click listener
+		* checks to see if a node was clicked, if so updates its count
+		* then redraws the test graph
 		*/
+		canv.addEventListener("click", function(evt){
+			//debugger;
+			coord = getMousePos(canv, evt);
+			// scale back to graph coordinates
+			coord.x = coord.x * 100/canv.width;
+			coord.y = coord.y * 100/canv.height;
+			
+			socket.emit("click", coord, id);
+			
+			/*
+			var ii = setInterval(function(){
+				if(testGraph.splodeList.length > 0){
+					testGraph.updateNode();
+					testGraph.draw();
+				}
+				else{
+					clearInterval(ii);
+				}
+			}, 300);
+			*/
+
+			
+		}, false);
+		
 
 		
-	}, false);
-	
-
-	
-  </script>
+	</script>
 </html>

@@ -17,20 +17,29 @@ var roomPlayers = [];
 app.listen(port);
 
 io.sockets.on('connection', function (socket) {
-	var newPlayer = new Player(getRandomColor(), id);
+	var newPlayer = new Player(getRandomColor(), id++);
 	roomPlayers.push(newPlayer);
 	//if(!graph.inProgress)
 		graph.addPlayer(newPlayer);
-	socket.emit('welcome', id);
-	id++;
+	socket.emit('welcome', newPlayer.id);
+	io.sockets.emit('playerUpdate', graph.players);
+	
 	
 	socket.emit('graphUpdate', graph);
-
-    socket.on("click", function(coord, id) {
+	
+	
+	socket.on('chat message', function(msg){
+		io.emit('chat message', msg);
+	});
+	
+	/*
+	* Click event
+	*/
+    socket.on("click", function(coord, clickId) {
 		console.log(coord);
 		var temp = graph.getWinner();
 		console.log(temp);
-		if(graph.players[graph.turnIndex].id == id){
+		if(graph.players[graph.turnIndex].id == clickId){
 			graph.makeMove(coord.x, coord.y);
 			io.sockets.emit('graphUpdate', graph);
 			var interval = setInterval(function(){
