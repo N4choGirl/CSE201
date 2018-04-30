@@ -12,6 +12,7 @@ var fs = require('fs');
 var graph = new RectGraph(8,8);
 var id = 0;
 var roomPlayers = [];
+var sockets = [];
 
 
 app.listen(port);
@@ -19,13 +20,40 @@ app.listen(port);
 io.sockets.on('connection', function (socket) {
 	var newPlayer = new Player(getRandomColor(), id++);
 	roomPlayers.push(newPlayer);
+	sockets.push(socket);
 	//if(!graph.inProgress)
 		graph.addPlayer(newPlayer);
 	socket.emit('welcome', newPlayer.id);
-	io.sockets.emit('playerUpdate', graph.players);
-	
+	io.sockets.emit('playerUpdate', roomPlayers);
+
 	
 	socket.emit('graphUpdate', graph);
+	
+	
+	
+	
+	
+	
+	socket.on('disconnect', function() {
+		var i = sockets.indexOf(socket);
+		if(i > -1){
+			//console.log('disconnected: ' + roomPlayers[i].name);
+			
+			var inGameIndex = graph.players.indexOf(roomPlayers[i]);
+			if(inGameIndex > -1){ // player is in the game
+				// TODO decide how to handle this situation
+				graph.players.splice(inGameIndex,1);
+			}
+			
+			sockets.splice(i,1);
+			roomPlayers.splice(i,1);
+			io.sockets.emit('playerUpdate', roomPlayers);
+
+		} else {
+			console.log('error in disconnect event');
+		}
+	});
+	
 	
 	/*
 	*	Chat message recieved
@@ -43,6 +71,7 @@ io.sockets.on('connection', function (socket) {
 					var newName;
 					if(params[1]){ // ensure a name was given
 						var newName = params[1];
+						// TODO append potential other params split by spaces
 						//console.log(newName);
 						var thisPlayer = getPlayerById(msg.playerId);
 						var oldName = thisPlayer.name;
@@ -50,15 +79,20 @@ io.sockets.on('connection', function (socket) {
 						
 						io.emit('chat message', 'Server: ' + oldName + ' has changed their name to ' + newName);
 						io.emit('playerUpdate', roomPlayers);
-					} else {
-						// TODO serverMessage(didnt enter params, socket)
+					} else { // no name was given
+						socket.emit('chat message', 'error: enter a name parameter e.g. /name John')
 					}
+					break;
+				case 'help':
+					socket.emit('chat message', 'Commands:');
+					socket.emit('chat message', '/name @newName   change your name');
 					break;
 			}
 			
-		}
-		else{
-			io.emit('chat message', msg.content);
+		} // end commands
+		else{ // a normal chat message
+			io.emit('chat message', getPlayerById(msg.playerId).name + ': ' + msg.content);
+			io.emit('graphUpdate', graph);
 		}
 	});
 	
@@ -84,6 +118,13 @@ io.sockets.on('connection', function (socket) {
 		}
     });
 });
+
+/**
+Sends text (no server nameplate) to a socket
+**/
+function serverMessage(socket, message){
+	socket.emit('chat message', message);
+}
 
 
 function RectGraph(rows, columns){
