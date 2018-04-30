@@ -4,7 +4,8 @@ var node2 = new Node(0,0,20,2);
 node1.addNeighbor(node2);
 console.log(node1.hasNeighbor(node2)); // true
 
-
+node1.removeNeighbor(node2);
+console.log(node1.hasNeighbor(node2)); // false
 
 
 
