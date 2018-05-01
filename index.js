@@ -15,6 +15,9 @@ var id = 1;
 var roomPlayers = [];
 var sockets = [];
 var maxNameLength = 30;
+var gameQueue = [];
+var gameInProgress = false;
+var maxPlayersPerGame = 8;
 
 
 app.listen(port);
@@ -23,8 +26,9 @@ io.sockets.on('connection', function (socket) {
 	var newPlayer = new Player(getRandomColor(), id++);
 	roomPlayers.push(newPlayer);
 	sockets.push(socket);
-	//if(!graph.inProgress)
+	if(!gameInProgress){
 		graph.addPlayer(newPlayer);
+	}
 	socket.emit('welcome', newPlayer.id);
 	io.sockets.emit('playerUpdate', roomPlayers);
 
@@ -43,13 +47,16 @@ io.sockets.on('connection', function (socket) {
 			
 			var inGameIndex = graph.players.indexOf(roomPlayers[i]);
 			if(inGameIndex > -1){ // player is in the game
+				//console.log('game player left');
 				// TODO decide how to handle this situation
 				graph.players.splice(inGameIndex,1);
+				io.emit('graphUpdate', graph);
 			}
 			
 			sockets.splice(i,1);
 			roomPlayers.splice(i,1);
 			io.sockets.emit('playerUpdate', roomPlayers);
+			io.emit('graphUpdate', graph);
 
 		} else {
 			console.log('error in disconnect event');
@@ -69,6 +76,9 @@ io.sockets.on('connection', function (socket) {
 			var command = params[0].slice(1);
 			
 			switch (command) {
+				/*
+				* Name change command
+				*/
 				case 'name':
 					var newName;
 					try {
@@ -91,7 +101,8 @@ io.sockets.on('connection', function (socket) {
 							thisPlayer.name = newName;
 							
 							io.emit('chat message', 'Server: ' + oldName + ' has changed their name to ' + newName);
-							io.emit('playerUpdate', roomPlayers);
+							io.emit('playerUpdate', roomPlayers); 
+							io.emit('graphUpdate', graph);
 						} else { // no name was given
 							throw 'noName';
 							
@@ -109,6 +120,42 @@ io.sockets.on('connection', function (socket) {
 					socket.emit('chat message', 'Commands:');
 					socket.emit('chat message', '/name @newName   change your name');
 					break;
+				case 'joinQueue':
+					try{
+						var i = sockets.indexOf(socket);
+						
+						if( i == -1){
+							gameQueue.push(roomPlayers[i]);
+							socket.emit('chat message', 'You are ' + gameQueue.length + ' in queue');
+							// TODO display where in queue you are
+						} else {
+							throw 'inQueue';
+						}
+					} catch (err) {
+						if(err == 'inQueue'){
+							socket.emit('chat message', 'already in queue');
+						}
+					}
+					break;
+				case 'leaveQueue' :
+					try{
+						var i = gameQueue.indexOf(socket);
+						
+						if( i > -1){
+							gameQueue.splice(i, 1);
+						} else {
+							throw 'notInQueue';
+						}
+					} catch (err) {
+						if(err == 'notInQueue'){
+							socket.emit('chat message', 'not in queue');
+						}
+					}
+					break;
+				case 'startGame' :
+					
+					break;
+				
 			}
 			
 		} // end commands
@@ -122,15 +169,26 @@ io.sockets.on('connection', function (socket) {
 	* Click event
 	*/
     socket.on("click", function(coord, clickId) {
-		console.log(coord);
-		var temp = graph.getWinner();
-		console.log(temp);
+		
+		if(!gameInProgress){
+			//return;
+		}
+		
 		if(graph.players[graph.turnIndex].id == clickId){
 			graph.makeMove(coord.x, coord.y);
 			io.sockets.emit('graphUpdate', graph);
+			var winnerFound = false;
 			var interval = setInterval(function(){
-				if(graph.splodeList.length > 0){
+				if(graph.splodeList.length > 0 && !winnerFound){
 					graph.updateNode();
+					
+					var index = graph.getWinner();
+					if(index > -1){
+						//winnerFound = true;
+						console.log('Winner: ' + graph.players[index].name);
+						// TODO handle this situation
+					}
+					
 					io.sockets.emit('graphUpdate', graph);
 				}
 				else{
@@ -146,6 +204,19 @@ Sends text (no server nameplate) to a socket
 **/
 function serverMessage(socket, message){
 	socket.emit('chat message', message);
+}
+
+function getQueuePosition(socket){
+	var i = sockets.indexOf(socket);
+	var thePlayer;
+	if(i > -1)
+		thePlayer = roomPlayers[i];
+	else{
+		console.log('queuePosition error ');
+		return;
+	}
+	
+	return gameQueue.indexOf(thePlayer);
 }
 
 
@@ -178,19 +249,11 @@ function Graph(){
 	this.players = [];
 	this.turnIndex = 0; // used to keep track of game
 	this.splodeList = [];
-	this.inProgress = false;
 	
-	this.start = function(){
-		this.inProgress = true;
-	};
-	
-	this.end = function(){
-		this.inProgress = false;
-	};
 	
 	this.addPlayer = function(newPlayer){
 		var index = this.players.indexOf(newPlayer);
-		console.log(index);
+		//console.log(index);
 		if(index == -1){
 			this.players.push(newPlayer);
 		}
@@ -204,6 +267,8 @@ function Graph(){
 	
 	/**
 		Checks if the game has a winner yet
+		returns -1 if no winner
+		returns the index of the winner in graph.players
 	**/
 	this.getWinner = function(){
 		var tempPlayer = this.nodes[0].player;
@@ -215,7 +280,7 @@ function Graph(){
 			if(tempNode.player != tempPlayer)
 				return -1;
 		}
-		console.log("Player: " + tempPlayer);
+		//console.log("Player: " + tempPlayer);
 		return this.players.indexOf(tempPlayer);
 	};
 	
@@ -263,21 +328,21 @@ function Graph(){
 				neighInc++;
 			}
 			
-			console.log("start");
+			//console.log("start");
 			
-			console.log(node.neighbors.length);
+			//console.log(node.neighbors.length);
 			for(j=0; j<node.neighbors.length; j++){
-				console.log(j);
+				//console.log(j);
 				var neigh = this.getNodeByID(node.neighbors[j]);
-				console.log(j);
+				//console.log(j);
 				neigh.dotCount = neigh.dotCount + neighInc;
 				neigh.player = node.player;
 				this.splodeList.push(neigh);
 			}
 			
-			console.log("end");
-			console.log(this.getWinner());
-			console.log("");
+			//console.log("end");
+			//console.log(this.getWinner());
+			//console.log("");
 		}
 
 
