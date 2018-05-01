@@ -49,7 +49,7 @@
 		/***********************************
 		* SOCKET.IO Functions
 		***********************************/
-		var socket = io.connect('172.25.95.6:3000');
+		var socket = io.connect('172.22.99.183:3000');
 		
 		$('form').submit(function(){
 			var msg = { playerId : id,
@@ -128,10 +128,80 @@
 			context.beginPath();
 			context.arc(node.x, node.y, node.radius, 0, 2*Math.PI);
 			context.fill(); // node color (inside)
-			context.fillStyle = "#000000";
+			context.fillStyle = "#000000"; //black
 			context.stroke(); // outline
-			context.font = "12px Arial";
-			context.fillText("" + node.dotCount, node.x-3, node.y+4);
+			var dotRadius = node.radius / 9;
+			var dotPos = .3*node.radius;
+			if (node.dotCount % 2 == 1) {
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x, node.y, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "000000"; 
+				context.stroke(); // outline
+			}
+			if (node.dotCount >= 2) {
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x - dotPos, node.y + dotPos, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x + dotPos, node.y - dotPos, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+			}
+			if (node.dotCount >= 4) {
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x - dotPos, node.y - dotPos, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x + dotPos, node.y + dotPos, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+			}
+			if (node.dotCount >= 6) {
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x - dotPos, node.y, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x + dotPos, node.y, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+			}
+			if (node.dotCount >= 8) {
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x, node.y - dotPos, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+				context.beginPath();
+				context.arc(node.x, node.y + dotPos, dotRadius, 0, 2*Math.PI);
+				context.fill(); // node color (inside)
+				context.fillStyle = "#000000";
+				context.stroke(); // outline
+				context.fillStyle = "#ffffff";
+			}
+			//context.font = "12px Arial";
+			//context.fillText("" + node.dotCount, node.x-3, node.y+4);
 		}
 		
 		function scaleGraph(graph, s){
