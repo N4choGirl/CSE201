@@ -24,21 +24,8 @@
 	</head>
 	
 	<body>
-<<<<<<< HEAD
+
 		<h1 style="font-family:Comic Sans MS;"><center>Dot Bomb</center></h1>
-		<canvas id="gameCanvas" width="480" height="480" style="border:1px solid #000000;"></canvas>
-		<div id='infoBox'>
-			<div id='gameText'></div>
-			<ul id='playerList'></ul>
-		</div>
-		<div id='chatBox'>
-			<ul id="messages"></ul>
-		
-			<form action="">
-				<input id="m" autocomplete="off" /><button id='send'>Send</button>
-			</form>
-=======
-		<div id='title'>DotBomb</div>
 		<div>
 			<div id='gameBox'>
 				<div id='gameText'></div>
@@ -54,7 +41,6 @@
 					<input id="m" autocomplete="off" /><button id='send'>Send</button>
 				</form>
 			</div>
->>>>>>> f2eb743ce6eb517e69d2c8eb457e6b724a32b483
 		</div>
 	</body>
 
@@ -71,14 +57,9 @@
 		/***********************************
 		* SOCKET.IO Functions
 		***********************************/
-<<<<<<< HEAD
-		var socket = io.connect('172.25.52.182:3000');
-=======
 
 		var socket = io.connect('localhost:3000');
 
-
->>>>>>> f2eb743ce6eb517e69d2c8eb457e6b724a32b483
 		
 		$('form').submit(function(){
 			var msg = { playerId : id,
