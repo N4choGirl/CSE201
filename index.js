@@ -405,3 +405,4 @@ function getPlayerById(id) {
 			return roomPlayers[j];
 	}
 	return null;
+}
