@@ -22,6 +22,7 @@
 	</head>
 	
 	<body>
+		<h1 style="font-family:Comic Sans MS;"><center>Dot Bomb</center></h1>
 		<canvas id="gameCanvas" width="480" height="480" style="border:1px solid #000000;"></canvas>
 		<div id='infoBox'>
 			<div id='gameText'></div>
@@ -49,7 +50,7 @@
 		/***********************************
 		* SOCKET.IO Functions
 		***********************************/
-		var socket = io.connect('172.22.99.183:3000');
+		var socket = io.connect('172.25.52.182:3000');
 		
 		$('form').submit(function(){
 			var msg = { playerId : id,

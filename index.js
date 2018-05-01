@@ -166,6 +166,36 @@ function Graph(){
 		this.inProgress = false;
 	};
 	
+	this.checkColor = function(hexNum){ //hexNum is in hex but without the '#'
+	// get red/green/blue int values of hex1
+		var r1 = parseInt(hexNum.substring(0, 1), 16);
+		var g1 = parseInt(hexNum.substring(2, 3), 16);
+		var b1 = parseInt(hexNum.substring(4, 5), 16);
+		var keepOn = true;
+		for(var i=0;keepOn && this.players.length>i;i++) {
+			var tempPlayer = this.players[i];
+			var tempHex = tempPlayer.color.substring(1);
+			// get red/green/blue int values of hex2
+			var r2 = parseInt(tempHex.substring(0, 1), 16);
+			var g2 = parseInt(tempHex.substring(2, 3), 16);
+			var b2 = parseInt(tempHex.substring(4, 5), 16);
+			// calculate differences between reds, greens and blues
+			var r = Math.abs(r1 - r2);
+			var g = Math.abs(g1 - g2);
+			var b = Math.abs(b1 - b2);
+			// 0 means opposit colors, 1 means same colors
+			keepOn=false;
+			if(r>=2 || g>=2 || b>=2){
+				keepOn = true;
+			}
+		}
+		if(!keepOn){
+			hexNum = getRandomColor();
+			hexNum = this.checkColor(hexNum);
+		}
+		return hexNum;
+	}
+	
 	this.addPlayer = function(newPlayer){
 		var index = this.players.indexOf(newPlayer);
 		console.log(index);
@@ -371,9 +401,11 @@ function Player(color, id){
 function getRandomColor() {
   var letters = '0123456789ABCDEF';
   var color = '#';
+  var temp = '';
   for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
+    temp += letters[Math.floor(Math.random() * 16)];
   }
+  color += graph.checkColor(temp);
   return color;
 }
 
