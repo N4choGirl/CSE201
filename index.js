@@ -10,9 +10,10 @@ var io = require('socket.io').listen(app);
 var port = 3000;
 var fs = require('fs');
 var graph = new RectGraph(8,8);
-var id = 0;
+var id = 1;
 var roomPlayers = [];
 var sockets = [];
+var maxNameLength = 30;
 
 
 app.listen(port);
@@ -69,18 +70,38 @@ io.sockets.on('connection', function (socket) {
 			switch (command) {
 				case 'name':
 					var newName;
-					if(params[1]){ // ensure a name was given
-						var newName = params[1];
-						// TODO append potential other params split by spaces
-						//console.log(newName);
-						var thisPlayer = getPlayerById(msg.playerId);
-						var oldName = thisPlayer.name;
-						thisPlayer.name = newName;
-						
-						io.emit('chat message', 'Server: ' + oldName + ' has changed their name to ' + newName);
-						io.emit('playerUpdate', roomPlayers);
-					} else { // no name was given
-						socket.emit('chat message', 'error: enter a name parameter e.g. /name John')
+					try {
+						if(params[1]){ // ensure a name was given
+							var newName = params[1];
+							
+							for(var j=2; j<params.length; j++){ // append parts of the name seperated by spaces
+								newName = newName + " " + params[j];
+							}
+							
+							if(newName.length > maxNameLength){
+								throw 'tooLong'
+							} else if(newName.length == 0){
+								throw 'noName'
+							}
+							
+							//console.log(newName);
+							var thisPlayer = getPlayerById(msg.playerId);
+							var oldName = thisPlayer.name;
+							thisPlayer.name = newName;
+							
+							io.emit('chat message', 'Server: ' + oldName + ' has changed their name to ' + newName);
+							io.emit('playerUpdate', roomPlayers);
+						} else { // no name was given
+							throw 'noName';
+							
+						}
+					}
+					catch(err) {
+						if(err == 'noName'){
+							socket.emit('chat message', 'error: enter a name parameter e.g. /name John');
+						} else if(err == 'tooLong'){
+							socket.emit('chat message', 'error: please enter a name under ' + maxNameLength + ' characters long'); 
+						}
 					}
 					break;
 				case 'help':
