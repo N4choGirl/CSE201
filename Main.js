@@ -148,8 +148,29 @@ function Node(x,y,radius){
 		context.fill(); // node color (inside)
 		context.fillStyle = "#000000";
 		context.stroke(); // outline
-		context.font = "12px Arial";
-		context.fillText("" + this.dotCount, this.x-3, this.y+4);
+		ctx.fillStyle = "#ffffff";
+		var dotRadius = this.radius / 9;
+		var dotPos = .3*this.radius;
+		if (num % 2 == 1)
+			drawCircle(this.x, this.y, dotRadius);
+		if (this.dotCount >= 2) {
+			drawCircle(this.x - dotPos, this.y + dotPos, dotRadius);
+			drawCircle(this.x + dotPos, this.y - dotPos, dotRadius);
+		}
+		if (this.dotCount >= 4) {
+			drawCircle(this.x - dotPos, this.y - dotPos, dotRadius);
+			drawCircle(this.x + dotPos, this.y + dotPos, dotRadius);
+		}
+		if (this.dotCount >= 6) {
+			drawCircle(this.x - dotPos, this.y, dotRadius);
+			drawCircle(this.x + dotPos, this.y, dotRadius);
+		}
+		if (this.dotCount >= 8) {
+			drawCircle(this.x, this.y - dotPos, dotRadius);
+			drawCircle(this.x, this.y + dotPos, dotRadius);
+		}
+			//context.font = "12px Arial";
+			//context.fillText("" + this.dotCount, this.x-3, this.y+4);
 		//context.fillText("" + this.neighbors.length, this.x-3, this.y+13);
 	};
 	
