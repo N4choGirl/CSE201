@@ -105,7 +105,7 @@
 			for(var k=0; k<players.length; k++){
 				var li = document.createElement("li");
 				
-				li.appendChild(document.createTextNode(players[k].name));
+				li.appendChild(createPlayerListItem(players[k]));
 				playerList.appendChild(li);
 			}
 			
@@ -120,6 +120,15 @@
 		/***********************************
 		* RUNTIME Functions
 		***********************************/
+		
+		function createPlayerListItem(player){
+			var myDiv = document.createElement("div");
+			myDiv.style.color = player.color;
+			myDiv.appendChild(document.createTextNode(player.name));
+			return myDiv;
+			
+		}
+		
 		function clearPlayerList(){
 			while(playerList.hasChildNodes()){
 				playerList.removeChild(playerList.childNodes[0]);
