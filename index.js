@@ -23,7 +23,8 @@ var maxPlayersPerGame = 8;
 app.listen(port);
 
 io.sockets.on('connection', function (socket) {
-	var newPlayer = new Player(getRandomColor(), id++);
+	var newPlayer = new Player(graph.checkColor(getRandomColor()), id++);
+	console.log(newPlayer.color);
 	roomPlayers.push(newPlayer);
 	sockets.push(socket);
 	if(!gameInProgress){
@@ -282,24 +283,27 @@ function Graph(){
 	
 	this.checkColor = function(hexNum){ //hexNum is in hex but without the '#'
 	// get red/green/blue int values of hex1
-		var r1 = parseInt(hexNum.substring(0, 1), 16);
-		var g1 = parseInt(hexNum.substring(2, 3), 16);
-		var b1 = parseInt(hexNum.substring(4, 5), 16);
+		var r1 = parseInt(hexNum.substring(1, 3), 16);
+		var g1 = parseInt(hexNum.substring(3, 5), 16);
+		var b1 = parseInt(hexNum.substring(5, 7), 16);
 		var keepOn = true;
 		for(var i=0;keepOn && this.players.length>i;i++) {
 			var tempPlayer = this.players[i];
 			var tempHex = tempPlayer.color.substring(1);
 			// get red/green/blue int values of hex2
-			var r2 = parseInt(tempHex.substring(0, 1), 16);
-			var g2 = parseInt(tempHex.substring(2, 3), 16);
-			var b2 = parseInt(tempHex.substring(4, 5), 16);
+			var r2 = parseInt(tempHex.substring(1, 3), 16);
+			var g2 = parseInt(tempHex.substring(3, 5), 16);
+			var b2 = parseInt(tempHex.substring(5, 7), 16);
 			// calculate differences between reds, greens and blues
 			var r = Math.abs(r1 - r2);
 			var g = Math.abs(g1 - g2);
 			var b = Math.abs(b1 - b2);
-			// 0 means opposit colors, 1 means same colors
+			console.log(r);
+			console.log(g);
+			console.log(b);
+			// Check difference
 			keepOn=false;
-			if(r>=2 || g>=2 || b>=2){
+			if(r>=80 || g>=80 || b>=80){
 				keepOn = true;
 			}
 		}
