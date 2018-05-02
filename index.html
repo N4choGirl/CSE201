@@ -118,12 +118,21 @@
 		});
 		socket.on('welcome', function(newId){
 			id = newId;
+			clearMessages();
 		});
 
 		
 		/***********************************
 		* RUNTIME Functions
 		***********************************/
+		
+		
+		function clearMessages(){
+			box = $('#messages')
+			while(box.firstChild){
+				box.removeChile(box.firstChild);
+			}
+		}
 		
 		function createPlayerListItem(player){
 			var myDiv = document.createElement("div");

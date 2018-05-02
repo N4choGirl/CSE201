@@ -28,6 +28,7 @@ io.sockets.on('connection', function (socket) {
 	roomPlayers.push(newPlayer);
 	sockets.push(socket);
 	socket.emit('welcome', newPlayer.id);
+	socket.emit('chat message', 'Welcome to Dot Bomb! type /help to see a list of commands!');
 	io.sockets.emit('playerUpdate', roomPlayers);
 
 	
@@ -196,6 +197,42 @@ io.sockets.on('connection', function (socket) {
 					io.emit('chat message', 'The game has been reset'); // TODO by who?
 					resetGame(50);
 					break;
+				
+				case 'color':
+					
+					try{
+						var i = sockets.indexOf(socket);
+						var player = roomPlayers[i];
+						
+						if(graph.players.indexOf(player) > -1){ // the player is playing, check his color
+							if(graph.checkColor(player.color) != player.color){
+								//throw 'colorTooClose';
+							}
+						}
+						var color = params[1];
+						if(color == null)
+							throw 'noColor';
+						if(!isHex(color))
+							throw 'invalid';
+						// no problems, change the color
+						console.log(color);
+						player.color = color;
+						io.emit('playerUpdate', roomPlayers); 
+						io.emit('graphUpdate', graph);
+						
+						
+						
+					} catch (err){
+						if(err === 'colorTooClose'){
+							socket.emit('chat message', "That color is too close to another player's");
+						} else if(err == 'invalid'){
+							socket.emit('chat message', "Color provided is invalid, please give hex in the form #00000");
+						} else if(err == 'noColor'){
+							socket.emit('chat message', "No color provided");
+						}
+					}
+					break;
+				
 				default:
 					socket.emit('chat message', 'Unrecognized command');
 					break;
@@ -338,7 +375,7 @@ function Graph(){
 			console.log(b);
 			// Check difference
 			keepOn=false;
-			if(r>=80 || g>=80 || b>=80){
+			if(r + b + g > 30){
 				keepOn = true;
 			}
 		}
@@ -569,4 +606,8 @@ function getPlayerById(id) {
 	}
 	return null;
 
+}
+
+function isHex(str) {
+	return str.match(/^#[a-f0-9]{6}$/i) != null;
 }
