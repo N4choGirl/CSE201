@@ -27,9 +27,6 @@ io.sockets.on('connection', function (socket) {
 	console.log(newPlayer.color);
 	roomPlayers.push(newPlayer);
 	sockets.push(socket);
-	if(!gameInProgress){
-		graph.addPlayer(newPlayer);
-	}
 	socket.emit('welcome', newPlayer.id);
 	io.sockets.emit('playerUpdate', roomPlayers);
 
@@ -51,7 +48,6 @@ io.sockets.on('connection', function (socket) {
 				//console.log('game player left');
 				// TODO decide how to handle this situation
 				graph.players.splice(inGameIndex,1);
-				io.emit('graphUpdate', graph);
 			}
 			
 			sockets.splice(i,1);
@@ -124,10 +120,13 @@ io.sockets.on('connection', function (socket) {
 				case 'joinQueue':
 					try{
 						var i = sockets.indexOf(socket);
+						var j = gameQueue.indexOf(roomPlayers[i]);
+						console.log(i);
+						console.log(j);
 						
-						if( i == -1){
+						if( j == -1){
 							gameQueue.push(roomPlayers[i]);
-							socket.emit('chat message', 'You are ' + gameQueue.length + ' in queue');
+							socket.emit('chat message', 'You are position ' + gameQueue.length + ' in queue');
 							// TODO display where in queue you are
 						} else {
 							throw 'inQueue';
@@ -154,16 +153,51 @@ io.sockets.on('connection', function (socket) {
 					}
 					break;
 				case 'startGame' :
-					if(gameInProgress){
-						return; // TODO throw something here
+					try{
+						if(gameInProgress){
+							return; // TODO throw something here
+						}
+						// fill graph with players
+						var message = 'Adding: ';
+						
+						console.log(graph.players);
+						console.log(gameQueue);
+						if(gameQueue.length < 2){
+							throw 'notEnoughPlayers'
+						}
+						while(graph.players.length <= 8 && gameQueue.length > 0){
+							// TODO check for different colors
+							var currPlayer = gameQueue.shift();
+							message = message + currPlayer.name;
+							console.log(currPlayer.name);
+							if(!(graph.players.length == 8 || gameQueue.length == 0)){
+								message = message + ', ';
+							}
+							graph.players.push(currPlayer);
+						}
+						
+						message = message + ' to the game';
+						io.emit('chat message', message);
+						
+						
+						graph.active = true;
+						gameInProgress = true;
+						io.emit('graphUpdate', graph);
+					} catch(err) {
+						if(err == 'notEnoughPlayers'){
+							io.emit('chat message', 'Not enough players (' + gameQueue.length + ') in queue to start the game');
+						}
 					}
-					// fill graph with players
-					while(graph.players.length <= 8 && gameQueue.length > 0){
-						graph.players.push(gameQueue.shift());
+					break;
+				case 'endGame' :
+					if(!gameInProgress){
+						return; //TODO throw something?
 					}
-					
-					gameInProgress = true;
-					io.emit('graphUpdate', graph);
+					io.emit('chat message', 'The game has been reset'); // TODO by who?
+					resetGame(50);
+					break;
+				default:
+					socket.emit('chat message', 'Unrecognized command');
 					break;
 				
 			}
@@ -280,6 +314,7 @@ function Graph(){
 	this.players = [];
 	this.turnIndex = 0; // used to keep track of game
 	this.splodeList = [];
+	this.active = false;
 	
 	this.checkColor = function(hexNum){ //hexNum is in hex but without the '#'
 	// get red/green/blue int values of hex1

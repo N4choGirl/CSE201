@@ -95,7 +95,11 @@
 		socket.on('graphUpdate', function (data) {
 			testGraph = data;
 			drawGraph(canv, testGraph);
-			div.innerHTML = testGraph.players[testGraph.turnIndex].name + "'s turn ";
+			if(testGraph.active){
+				div.innerHTML = testGraph.players[testGraph.turnIndex].name + "'s turn ";
+			}else{
+				div.innerHTML = 'No game in progress';
+			}
 			//div.style.color = data.players[data.turnIndex].color;
 			console.log(data);
 
