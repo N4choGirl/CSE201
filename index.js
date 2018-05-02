@@ -10,7 +10,7 @@ var app = require('http').createServer(handler);
 var io = require('socket.io').listen(app);
 var port = 3000;
 var fs = require('fs');
-var graph = new RectGraph(8,8);
+var graph = new RectGraph(2,2);
 var id = 1;
 var roomPlayers = [];
 var sockets = [];
@@ -153,7 +153,16 @@ io.sockets.on('connection', function (socket) {
 					}
 					break;
 				case 'startGame' :
+					if(gameInProgress){
+						return; // TODO throw something here
+					}
+					// fill graph with players
+					while(graph.players.length <= 8 && gameQueue.length > 0){
+						graph.players.push(gameQueue.shift());
+					}
 					
+					gameInProgress = true;
+					io.emit('graphUpdate', graph);
 					break;
 				
 			}
@@ -171,22 +180,27 @@ io.sockets.on('connection', function (socket) {
     socket.on("click", function(coord, clickId) {
 		
 		if(!gameInProgress){
-			//return;
+			return;
 		}
 		
 		if(graph.players[graph.turnIndex].id == clickId){
 			graph.makeMove(coord.x, coord.y);
+			var index = graph.getWinner();
+			if(index > -1){
+				gameWon(graph.players[index]);
+			}
 			io.sockets.emit('graphUpdate', graph);
 			var winnerFound = false;
 			var interval = setInterval(function(){
 				if(graph.splodeList.length > 0 && !winnerFound){
 					graph.updateNode();
 					
-					var index = graph.getWinner();
+					index = graph.getWinner;
 					if(index > -1){
-						//winnerFound = true;
-						console.log('Winner: ' + graph.players[index].name);
-						// TODO handle this situation
+						winnerFound = true;
+						//console.log('Winner: ' + graph.players[index].name);
+						gameWon(graph.players[index]);
+
 					}
 					
 					io.sockets.emit('graphUpdate', graph);
@@ -194,7 +208,7 @@ io.sockets.on('connection', function (socket) {
 				else{
 					clearInterval(interval);
 				}
-			}, 300);
+			}, 200);
 		}
     });
 });
@@ -217,6 +231,22 @@ function getQueuePosition(socket){
 	}
 	
 	return gameQueue.indexOf(thePlayer);
+}
+
+function gameWon(winner){
+	io.emit('chat message', winner.name + ' has won!');
+	io.emit('chat message', 'resetting game in 5 seconds');
+	resetGame(5000);
+}
+
+function resetGame(timeout){
+	setTimeout(function() {
+		gameInProgress = false;
+		graph = new RectGraph(8,8);
+		io.emit('playerUpdate', roomPlayers); 
+		io.emit('graphUpdate', graph);
+		io.emit('chat message', 'ready to start a new game');
+	}, timeout);
 }
 
 
@@ -304,8 +334,8 @@ function Graph(){
 		if(tempPlayer == null)
 			return -1; 
 		
-		for(var i=1; i<this.players.length; i++){
-			var tempNode = this.nodes[i];
+		for(var l=1; l<this.nodes.length; l++){
+			var tempNode = this.nodes[l];
 			if(tempNode.player != tempPlayer)
 				return -1;
 		}
