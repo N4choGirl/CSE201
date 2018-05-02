@@ -6,6 +6,18 @@
 		<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 		
 		<style>
+			
+			.grid-container {
+			display: grid;
+			grid-template-columns: auto auto auto auto;
+			padding: 10px;
+			}
+			
+			.grid-item {
+			background-color: rgba(255, 255, 255, 0.8);
+			padding: 20px;			
+			}
+			
 			* { margin: 0; padding: 0; box-sizing: border-box; }
 			body { font: 13px Helvetica, Arial; }
 			#title { float:center; font: 44px Helvetica Arial; text-align:center; }
@@ -25,22 +37,24 @@
 	
 	<body>
 
-		<h1 style="font-family:Comic Sans MS;"><center>Dot Bomb</center></h1>
-		<div>
-			<div id='gameBox'>
+		<font size="12" style="font-family:Comic Sans MS;"><center><u>Dot Bomb</u></center></font>
+		<div class="grid-container">
+			<div class="grid-item"></div>
+			<div class="grid-item" id='gameBox'>
 				<div id='gameText'></div>
 				<canvas id="gameCanvas" width="480" height="480" style="border:1px solid #000000;"></canvas>
 				<div id='infoBox'>
 					<ul id='playerList'></ul>
 				</div>
 			</div>
-			<div id='chatBox'>
+			<div class="grid-item" id='chatBox'>
 				<ul id="messages"></ul>
 			
 				<form action="">
 					<input id="m" autocomplete="off" /><button id='send'>Send</button>
 				</form>
 			</div>
+			<div class="grid-item"></div>
 		</div>
 	</body>
 
