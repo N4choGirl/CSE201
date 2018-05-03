@@ -137,6 +137,7 @@
 		function createPlayerListItem(player){
 			var myDiv = document.createElement("div");
 			myDiv.style.color = player.color;
+			console.log(player.color);
 			myDiv.appendChild(document.createTextNode(player.name));
 			return myDiv;
 			

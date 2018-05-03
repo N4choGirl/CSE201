@@ -23,7 +23,7 @@ var maxPlayersPerGame = 8;
 app.listen(port);
 
 io.sockets.on('connection', function (socket) {
-	var newPlayer = new Player(graph.checkColor(getRandomColor()), id++);
+	var newPlayer = new Player(getRandomColor(), id++);
 	console.log(newPlayer.color);
 	roomPlayers.push(newPlayer);
 	sockets.push(socket);
