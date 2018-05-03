@@ -76,7 +76,7 @@
 		* SOCKET.IO Functions
 		***********************************/
 
-		var socket = io.connect('localhost:3000');
+		var socket = io.connect('172.25.55.199:3000');
 
 		
 		$('form').submit(function(){
@@ -119,6 +119,7 @@
 		socket.on('welcome', function(newId){
 			id = newId;
 			clearMessages();
+			console.log('welcomed');
 		});
 
 		
@@ -128,9 +129,10 @@
 		
 		
 		function clearMessages(){
-			box = $('#messages')
-			while(box.firstChild){
-				box.removeChile(box.firstChild);
+			debugger;
+			box = document.getElementById('messages');
+			while(box.childNodes.length > 0){
+				box.removeChild(box.firstChild);
 			}
 		}
 		

@@ -116,9 +116,13 @@ io.sockets.on('connection', function (socket) {
 					break;
 				case 'help':
 					socket.emit('chat message', 'Commands:');
-					socket.emit('chat message', '/name @newName   change your name');
+					socket.emit('chat message', '/color [#FFFFFF] changes your color to the given hex color');
+					socket.emit('chat message', '/join adds you to the queue to join the game');
+					socket.emit('chat message', '/leave removes you from the queue to join the game');
+					socket.emit('chat message', '/name [newName]   change your name');
+					socket.emit('chat message', '/position shows your current position in queue');
 					break;
-				case 'joinQueue':
+				case 'join':
 					try{
 						var i = sockets.indexOf(socket);
 						var j = gameQueue.indexOf(roomPlayers[i]);
@@ -127,7 +131,7 @@ io.sockets.on('connection', function (socket) {
 						
 						if( j == -1){
 							gameQueue.push(roomPlayers[i]);
-							socket.emit('chat message', 'You are position ' + gameQueue.length + ' in queue');
+							io.emit('chat message', roomPlayers[i].name + ' has joined the queue at position ' + gameQueue.length );
 							// TODO display where in queue you are
 						} else {
 							throw 'inQueue';
@@ -138,12 +142,14 @@ io.sockets.on('connection', function (socket) {
 						}
 					}
 					break;
-				case 'leaveQueue' :
+				case 'leave' :
 					try{
-						var i = gameQueue.indexOf(socket);
+						var i = sockets.indexOf(socket);
+						var j = gameQueue.indexOf(roomPlayers[i]);	
 						
-						if( i > -1){
-							gameQueue.splice(i, 1);
+						if( j > -1){
+							gameQueue.splice(j, 1);
+							io.emit('chat message', roomPlayers[i].name + ' has left the queue, new queue length: ' + gameQueue.length);
 						} else {
 							throw 'notInQueue';
 						}
@@ -153,7 +159,24 @@ io.sockets.on('connection', function (socket) {
 						}
 					}
 					break;
-				case 'startGame' :
+					
+				case 'position' :
+					try {
+						var i = sockets.indexOf(socket);
+						var j = gameQueue.indexOf(roomPlayers[i]);
+						if(j == -1){
+							throw 'notInQueue';
+						}
+						socket.emit('chat message', 'You are position ' + (j+1) + ' out of ' + gameQueue.length + ' in queue');
+						
+					} catch(err) {
+						if(err == 'notInQueue'){
+							socket.emit('chat message', 'not in queue');
+						}
+					}
+					
+					break;
+				case 'start' :
 					try{
 						if(gameInProgress){
 							return; // TODO throw something here
@@ -182,7 +205,9 @@ io.sockets.on('connection', function (socket) {
 						
 						message = message + ' to the game';
 						io.emit('chat message', message);
-						
+						io.emit('chat message', 'Assigning players new colors');
+						io.emit('playerUpdate', roomPlayers); 
+
 						
 						graph.active = true;
 						gameInProgress = true;
@@ -193,7 +218,7 @@ io.sockets.on('connection', function (socket) {
 						}
 					}
 					break;
-				case 'endGame' :
+				case 'end' :
 					if(!gameInProgress){
 						return; //TODO throw something?
 					}
@@ -202,35 +227,38 @@ io.sockets.on('connection', function (socket) {
 					break;
 				
 				case 'color':
-					
+					console.log('color command');
 					try{
 						var i = sockets.indexOf(socket);
 						var player = roomPlayers[i];
 						
-						if(graph.players.indexOf(player) > -1){ // the player is playing, check his color
-							if(!(graph.checkColor(player.color))){
-								//throw 'colorTooClose';
-							}
-						}
+						
+
 						var color = params[1];
 						if(color == null)
 							throw 'noColor';
 						if(!isHex(color))
 							throw 'invalid';
-						if(graph.checkColor(color)) {
+						
+						//if(graph.checkColor(color)) {
 							// no problems, change the color
 							console.log(color);
 							player.color = color;
 							io.emit('playerUpdate', roomPlayers); 
 							io.emit('graphUpdate', graph);
+						
+						/*
+						} else {
+							throw 'colorTooClose';
 						}
+						*/
 						
 						
 					} catch (err){
 						if(err === 'colorTooClose'){
 							socket.emit('chat message', "That color is too close to another player's");
 						} else if(err == 'invalid'){
-							socket.emit('chat message', "Color provided is invalid, please give hex in the form #00000");
+							socket.emit('chat message', "Color provided is invalid, please give hex in the form #000000");
 						} else if(err == 'noColor'){
 							socket.emit('chat message', "No color provided");
 						}
