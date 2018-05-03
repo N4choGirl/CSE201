@@ -166,15 +166,18 @@ io.sockets.on('connection', function (socket) {
 						if(gameQueue.length < 2){
 							throw 'notEnoughPlayers'
 						}
+						var gameNum = 1;
 						while(graph.players.length <= 8 && gameQueue.length > 0){
 							// TODO check for different colors
 							var currPlayer = gameQueue.shift();
+							currPlayer.color = assignColor(gameNum);
 							message = message + currPlayer.name;
 							console.log(currPlayer.name);
 							if(!(graph.players.length == 8 || gameQueue.length == 0)){
 								message = message + ', ';
 							}
 							graph.players.push(currPlayer);
+							gameNum++;
 						}
 						
 						message = message + ' to the game';
@@ -205,7 +208,7 @@ io.sockets.on('connection', function (socket) {
 						var player = roomPlayers[i];
 						
 						if(graph.players.indexOf(player) > -1){ // the player is playing, check his color
-							if(graph.checkColor(player.color) != player.color){
+							if(!(graph.checkColor(player.color))){
 								//throw 'colorTooClose';
 							}
 						}
@@ -214,12 +217,13 @@ io.sockets.on('connection', function (socket) {
 							throw 'noColor';
 						if(!isHex(color))
 							throw 'invalid';
-						// no problems, change the color
-						console.log(color);
-						player.color = color;
-						io.emit('playerUpdate', roomPlayers); 
-						io.emit('graphUpdate', graph);
-						
+						if(graph.checkColor(color)) {
+							// no problems, change the color
+							console.log(color);
+							player.color = color;
+							io.emit('playerUpdate', roomPlayers); 
+							io.emit('graphUpdate', graph);
+						}
 						
 						
 					} catch (err){
@@ -380,10 +384,9 @@ function Graph(){
 			}
 		}
 		if(!keepOn){
-			hexNum = getRandomColor();
-			hexNum = this.checkColor(hexNum);
+			socket.emit('chat message', 'This color is unavailable');
 		}
-		return hexNum;
+		return keepOn;
 	}
 	
 	this.addPlayer = function(newPlayer){
@@ -588,6 +591,17 @@ function Player(color, id){
 	this.color = color;
 	this.id = id;
 	this.name = 'Player ' + id;
+}
+
+function assignColor(num) {
+	if(num==1) return '#DD0000'; // red
+	if(num==4) return '#FF8C00'; // orange
+	if(num==2) return '#FFFF00'; // yellow
+	if(num==5) return '#00E51A'; // green
+	if(num==3) return '#000CFF'; // dark blue
+	if(num==6) return '#A000DB'; // purple
+	if(num==7) return '#FF00E9'; // pink
+	if(num==8) return '#00B6FF'; // light blue
 }
 
 function getRandomColor() {
