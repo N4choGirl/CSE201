@@ -24,7 +24,7 @@ app.listen(port);
 
 io.sockets.on('connection', function (socket) {
 	var newPlayer = new Player(getRandomColor(), id++);
-	console.log(newPlayer.color);
+	//console.log(newPlayer.color);
 	roomPlayers.push(newPlayer);
 	sockets.push(socket);
 	socket.emit('welcome', newPlayer.id);
@@ -57,7 +57,7 @@ io.sockets.on('connection', function (socket) {
 			io.emit('graphUpdate', graph);
 
 		} else {
-			console.log('error in disconnect event');
+			//console.log('error in disconnect event');
 		}
 	});
 	
@@ -121,13 +121,14 @@ io.sockets.on('connection', function (socket) {
 					socket.emit('chat message', '/leave removes you from the queue to join the game');
 					socket.emit('chat message', '/name [newName]   change your name');
 					socket.emit('chat message', '/position shows your current position in queue');
+					socket.emit('chat message', '/tutorial will give you a simple game walkthrough');
 					break;
 				case 'join':
 					try{
 						var i = sockets.indexOf(socket);
 						var j = gameQueue.indexOf(roomPlayers[i]);
-						console.log(i);
-						console.log(j);
+						//console.log(i);
+						//console.log(j);
 						
 						if( j == -1){
 							gameQueue.push(roomPlayers[i]);
@@ -184,8 +185,8 @@ io.sockets.on('connection', function (socket) {
 						// fill graph with players
 						var message = 'Adding: ';
 						
-						console.log(graph.players);
-						console.log(gameQueue);
+						//console.log(graph.players);
+						//console.log(gameQueue);
 						if(gameQueue.length < 2){
 							throw 'notEnoughPlayers'
 						}
@@ -195,7 +196,7 @@ io.sockets.on('connection', function (socket) {
 							var currPlayer = gameQueue.shift();
 							currPlayer.color = assignColor(gameNum);
 							message = message + currPlayer.name;
-							console.log(currPlayer.name);
+							//console.log(currPlayer.name);
 							if(!(graph.players.length == 8 || gameQueue.length == 0)){
 								message = message + ', ';
 							}
@@ -227,7 +228,7 @@ io.sockets.on('connection', function (socket) {
 					break;
 				
 				case 'color':
-					console.log('color command');
+					//console.log('color command');
 					try{
 						var i = sockets.indexOf(socket);
 						var player = roomPlayers[i];
@@ -242,7 +243,7 @@ io.sockets.on('connection', function (socket) {
 						
 						//if(graph.checkColor(color)) {
 							// no problems, change the color
-							console.log(color);
+							//console.log(color);
 							player.color = color;
 							io.emit('playerUpdate', roomPlayers); 
 							io.emit('graphUpdate', graph);
@@ -264,7 +265,22 @@ io.sockets.on('connection', function (socket) {
 						}
 					}
 					break;
+				case 'tutorial':
+					socket.emit('chat message', '*******************************************************************');
+					socket.emit('chat message', 'Type /join to join the queue');
+					socket.emit('chat message', 'Once enough people are in the queue, type /start to start the game.');
+					socket.emit('chat message', 'The goal is to fill the entire board with your player color.');
+					socket.emit('chat message', 'When it is your turn, click on a circle that is either empty');
+					socket.emit('chat message', 'or is one you control. Each time you click on a circle, the');
+					socket.emit('chat message', 'number of dots in that circle increses by 1. When the amount');
+					socket.emit('chat message', 'of dots in a circle is greater than the amount of neighbors it has,');
+					socket.emit('chat message', 'the dot will overflow, taking over the surrounding circles and');
+					socket.emit('chat message', 'placing one dot in each. If at any point you would like to leave');
+					socket.emit('chat message', 'the game, you can typ /end to end the entire game or you can simply');
+					socket.emit('chat messgae', 'reload your web page so that the other players can finish the game.');
+					socket.emit('chat message', '*******************************************************************');
 				
+					break;
 				default:
 					socket.emit('chat message', 'Unrecognized command');
 					break;
@@ -330,7 +346,7 @@ function getQueuePosition(socket){
 	if(i > -1)
 		thePlayer = roomPlayers[i];
 	else{
-		console.log('queuePosition error ');
+		//console.log('queuePosition error ');
 		return;
 	}
 	
@@ -402,9 +418,9 @@ function Graph(){
 			var r = Math.abs(r1 - r2);
 			var g = Math.abs(g1 - g2);
 			var b = Math.abs(b1 - b2);
-			console.log(r);
-			console.log(g);
-			console.log(b);
+			//console.log(r);
+			//console.log(g);
+			//console.log(b);
 			// Check difference
 			keepOn=false;
 			if(r + b + g > 30){
@@ -530,7 +546,7 @@ function Graph(){
 					
 					if(Math.sqrt(dx*dx + dy*dy) <= distance){
 						this.nodes[i].addNeighbor(this.nodes[j]);
-						//Console.log(this.nodes[i].x, + ", "  + this.nodes[i
+						//console.log(this.nodes[i].x, + ", "  + this.nodes[i
 					}
 				}
 			}

@@ -76,7 +76,7 @@
 		* SOCKET.IO Functions
 		***********************************/
 
-		var socket = io.connect('172.25.55.199:3000');
+		var socket = io.connect('localhost:3000');
 
 		
 		$('form').submit(function(){
@@ -101,7 +101,7 @@
 				div.innerHTML = 'No game in progress';
 			}
 			//div.style.color = data.players[data.turnIndex].color;
-			console.log(data);
+			//console.log(data);
 
 		});
 		socket.on('playerUpdate', function(players){
@@ -119,7 +119,7 @@
 		socket.on('welcome', function(newId){
 			id = newId;
 			clearMessages();
-			console.log('welcomed');
+			//console.log('welcomed');
 		});
 
 		
@@ -139,7 +139,7 @@
 		function createPlayerListItem(player){
 			var myDiv = document.createElement("div");
 			myDiv.style.color = player.color;
-			console.log(player.color);
+			//console.log(player.color);
 			myDiv.appendChild(document.createTextNode(player.name));
 			return myDiv;
 			
@@ -293,7 +293,6 @@
 			coord.y = coord.y * 100/canv.height;
 			
 			socket.emit("click", coord, id);
-			
 			/*
 			var ii = setInterval(function(){
 				if(testGraph.splodeList.length > 0){
